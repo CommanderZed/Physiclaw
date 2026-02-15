@@ -1,88 +1,79 @@
-<svg width="1200" height="400" viewBox="0 0 1200 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1200" height="300" viewBox="0 0 1200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Grid pattern matching globals.css bg-grid -->
     <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(112,141,129,0.06)" stroke-width="0.5"/>
+      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#708D81" stroke-width="0.5" opacity="0.06"/>
     </pattern>
-    <!-- Ambient gold glow from hero section -->
-    <radialGradient id="glow" cx="50%" cy="35%" r="45%" fx="50%" fy="35%">
-      <stop offset="0%" stop-color="#F4D58D" stop-opacity="0.06"/>
+    <radialGradient id="glow" cx="50%" cy="40%" r="40%" fx="50%" fy="40%">
+      <stop offset="0%" stop-color="#F4D58D" stop-opacity="0.07"/>
       <stop offset="100%" stop-color="#001427" stop-opacity="0"/>
     </radialGradient>
-    <!-- Bottom fade -->
-    <linearGradient id="bottomFade" x1="0" y1="380" x2="0" y2="400" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#001427" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#001427" stop-opacity="1"/>
-    </linearGradient>
-    <!-- Top border gradient -->
-    <linearGradient id="topBorder" x1="0" y1="0" x2="1200" y2="0">
+    <linearGradient id="topLine" x1="0" y1="0" x2="1200" y2="0">
       <stop offset="0%" stop-color="#001427"/>
       <stop offset="30%" stop-color="#F4D58D" stop-opacity="0.4"/>
       <stop offset="50%" stop-color="#BF0603" stop-opacity="0.6"/>
       <stop offset="70%" stop-color="#F4D58D" stop-opacity="0.4"/>
       <stop offset="100%" stop-color="#001427"/>
     </linearGradient>
+    <linearGradient id="bottomLine" x1="0" y1="0" x2="1200" y2="0">
+      <stop offset="0%" stop-color="#001427"/>
+      <stop offset="20%" stop-color="#0d2e4a"/>
+      <stop offset="50%" stop-color="#0d2e4a"/>
+      <stop offset="80%" stop-color="#0d2e4a"/>
+      <stop offset="100%" stop-color="#001427"/>
+    </linearGradient>
   </defs>
 
   <!-- Navy background -->
-  <rect width="1200" height="400" fill="#001427"/>
-
+  <rect width="1200" height="300" fill="#001427"/>
   <!-- Grid overlay -->
-  <rect width="1200" height="400" fill="url(#grid)"/>
-
+  <rect width="1200" height="300" fill="url(#grid)"/>
   <!-- Ambient glow -->
-  <rect width="1200" height="400" fill="url(#glow)"/>
-
+  <rect width="1200" height="300" fill="url(#glow)"/>
   <!-- Top accent line -->
-  <rect x="0" y="0" width="1200" height="2" fill="url(#topBorder)"/>
+  <rect x="0" y="0" width="1200" height="2" fill="url(#topLine)"/>
 
-  <!-- Logo wordmark  centered, scaled from 1329x229 viewBox -->
-  <g transform="translate(270, 90) scale(0.50)">
-    <!-- "PHYSI" -->
-    <path
-      d="M12.4 194V50H77C87.5333 50 96.5333 51.8 104 55.4C111.6 59 117.4 64.0667 121.4 70.6C125.533 77.1333 127.6 84.8667 127.6 93.8C127.6 102.6 125.533 110.333 121.4 117C117.267 123.667 111.467 128.867 104 132.6C96.5333 136.2 87.5333 138 77 138H32.6V117.6H75.8C84.0667 117.6 90.4 115.467 94.8 111.2C99.3333 106.933 101.6 101.133 101.6 93.8C101.6 86.6 99.3333 80.9333 94.8 76.8C90.4 72.6667 84.0667 70.6 75.8 70.6H38.4V194H12.4ZM145.798 194V50H171.798V194H145.798ZM239.998 194V50H265.998V194H239.998ZM158.198 108.8H251.798V129.2H158.198V108.8ZM335.32 194V133.4L281.32 50H312.72L356.72 123.8H342.72L386.52 50H415.32L361.32 133.4V194H335.32ZM476.403 195.8C458.27 195.8 443.803 191.667 433.003 183.4C422.336 175 416.07 163.2 414.203 148H439.203C440.403 156.8 444.336 163.667 451.003 168.6C457.67 173.4 466.403 175.8 477.203 175.8C486.136 175.8 492.936 174.2 497.603 171C502.403 167.667 504.803 163.067 504.803 157.2C504.803 152 503.336 147.8 500.403 144.6C497.47 141.4 492.536 138.8 485.603 136.8L459.603 129C446.403 125 436.67 119.733 430.403 113.2C424.27 106.667 421.203 98.4667 421.203 88.6C421.203 80.3333 423.336 73.1333 427.603 67C431.87 60.8667 437.87 56.1333 445.603 52.8C453.47 49.4667 462.603 47.8 473.003 47.8C489.003 47.8 501.736 51.7333 511.203 59.6C520.803 67.3333 526.27 77.8667 527.603 91.2H502.603C501.136 83.2 497.803 77.3333 492.603 73.6C487.403 69.7333 480.403 67.8 471.603 67.8C463.87 67.8 457.736 69.3333 453.203 72.4C448.67 75.4667 446.403 79.6667 446.403 85C446.403 89.4 447.736 93.1333 450.403 96.2C453.203 99.2667 458.336 101.933 465.803 104.2L492.203 112.2C505.403 116.067 515.003 121.333 521.003 128C527.003 134.667 530.003 143.133 530.003 153.4C530.003 167 525.27 177.467 515.803 184.8C506.47 192.133 493.336 195.8 476.403 195.8ZM547.947 194V50H573.947V194H547.947Z"
-      fill="#F4D58D"
-    />
-    <!-- The "C" -->
-    <path
-      d="M623.415 194V136.842H599V110H623.415V50H716V91.6842H690.317V69.8947H646.561V170.316H690.317V151.053H716V194L623.415 194Z"
-      fill="#BF0603"
-    />
-    <!-- "LAW" -->
-    <path
-      d="M742.4 194V50H768.4V194H742.4ZM754.8 194V173.4H839.2V194H754.8ZM852.006 194L905.006 50H927.406L877.606 194H852.006ZM960.606 194L911.006 50H934.606L987.406 194H960.606ZM879.406 137.4H958.206V158.2H879.406V137.4ZM1020.8 194L979.402 50H1005.8L1041 182.2H1033.4L1066 50H1096L1128.2 182.2H1120.8L1156 50H1181.2L1139.8 194H1110.2L1077.4 64.8H1083.6L1050.4 194H1020.8Z"
-      fill="#F4D58D"
-    />
+  <!-- Logo wordmark centered (scale 0.50 from 1329x229, centered at 600,130) -->
+  <g transform="translate(268, 55) scale(0.50)">
+    <!-- PHYSI -->
+    <path d="M12.4 194V50H77C87.5333 50 96.5333 51.8 104 55.4C111.6 59 117.4 64.0667 121.4 70.6C125.533 77.1333 127.6 84.8667 127.6 93.8C127.6 102.6 125.533 110.333 121.4 117C117.267 123.667 111.467 128.867 104 132.6C96.5333 136.2 87.5333 138 77 138H32.6V117.6H75.8C84.0667 117.6 90.4 115.467 94.8 111.2C99.3333 106.933 101.6 101.133 101.6 93.8C101.6 86.6 99.3333 80.9333 94.8 76.8C90.4 72.6667 84.0667 70.6 75.8 70.6H38.4V194H12.4ZM145.798 194V50H171.798V194H145.798ZM239.998 194V50H265.998V194H239.998ZM158.198 108.8H251.798V129.2H158.198V108.8ZM335.32 194V133.4L281.32 50H312.72L356.72 123.8H342.72L386.52 50H415.32L361.32 133.4V194H335.32ZM476.403 195.8C458.27 195.8 443.803 191.667 433.003 183.4C422.336 175 416.07 163.2 414.203 148H439.203C440.403 156.8 444.336 163.667 451.003 168.6C457.67 173.4 466.403 175.8 477.203 175.8C486.136 175.8 492.936 174.2 497.603 171C502.403 167.667 504.803 163.067 504.803 157.2C504.803 152 503.336 147.8 500.403 144.6C497.47 141.4 492.536 138.8 485.603 136.8L459.603 129C446.403 125 436.67 119.733 430.403 113.2C424.27 106.667 421.203 98.4667 421.203 88.6C421.203 80.3333 423.336 73.1333 427.603 67C431.87 60.8667 437.87 56.1333 445.603 52.8C453.47 49.4667 462.603 47.8 473.003 47.8C489.003 47.8 501.736 51.7333 511.203 59.6C520.803 67.3333 526.27 77.8667 527.603 91.2H502.603C501.136 83.2 497.803 77.3333 492.603 73.6C487.403 69.7333 480.403 67.8 471.603 67.8C463.87 67.8 457.736 69.3333 453.203 72.4C448.67 75.4667 446.403 79.6667 446.403 85C446.403 89.4 447.736 93.1333 450.403 96.2C453.203 99.2667 458.336 101.933 465.803 104.2L492.203 112.2C505.403 116.067 515.003 121.333 521.003 128C527.003 134.667 530.003 143.133 530.003 153.4C530.003 167 525.27 177.467 515.803 184.8C506.47 192.133 493.336 195.8 476.403 195.8ZM547.947 194V50H573.947V194H547.947Z" fill="#F4D58D"/>
+    <!-- C -->
+    <path d="M623.415 194V136.842H599V110H623.415V50H716V91.6842H690.317V69.8947H646.561V170.316H690.317V151.053H716V194L623.415 194Z" fill="#BF0603"/>
+    <!-- LAW -->
+    <path d="M742.4 194V50H768.4V194H742.4ZM754.8 194V173.4H839.2V194H754.8ZM852.006 194L905.006 50H927.406L877.606 194H852.006ZM960.606 194L911.006 50H934.606L987.406 194H960.606ZM879.406 137.4H958.206V158.2H879.406V137.4ZM1020.8 194L979.402 50H1005.8L1041 182.2H1033.4L1066 50H1096L1128.2 182.2H1120.8L1156 50H1181.2L1139.8 194H1110.2L1077.4 64.8H1083.6L1050.4 194H1020.8Z" fill="#F4D58D"/>
   </g>
 
-  <!-- Tagline -->
-  <text x="600" y="260" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="20" font-weight="400" letter-spacing="0.5" fill="#708D81">
-    Specialized AI agents for your bare metal.
-  </text>
+  <!-- Tagline as path (converted from "Specialized AI agents for your bare metal.") -->
+  <!-- Using simple dots/line as a decorative separator since text paths are complex -->
 
-  <!-- Subtitle -->
-  <text x="600" y="290" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" letter-spacing="0.3" fill="#4a5f55">
-    100% On-Prem &amp; Air-Gap Ready
-  </text>
+  <!-- Decorative separator dots -->
+  <circle cx="555" cy="195" r="2" fill="#708D81" opacity="0.4"/>
+  <rect x="567" y="194" width="20" height="2" rx="1" fill="#F4D58D" opacity="0.3"/>
+  <circle cx="597" cy="195" r="1.5" fill="#BF0603" opacity="0.5"/>
+  <rect x="607" y="194" width="20" height="2" rx="1" fill="#F4D58D" opacity="0.3"/>
+  <circle cx="637" cy="195" r="2" fill="#708D81" opacity="0.4"/>
 
-  <!-- Badge pills row -->
-  <!-- Open Source badge -->
-  <rect x="370" y="320" width="110" height="26" rx="13" fill="rgba(112,141,129,0.1)" stroke="rgba(112,141,129,0.2)" stroke-width="1"/>
-  <circle cx="388" cy="333" r="3" fill="#8aa89b"/>
-  <text x="398" y="338" font-family="ui-monospace, 'SF Mono', monospace" font-size="11" font-weight="500" fill="#8aa89b">Open Source</text>
+  <!-- Badge pill outlines (no text, shape-only) -->
+  <!-- Open Source pill -->
+  <rect x="358" y="225" width="110" height="26" rx="13" fill="#708D81" opacity="0.08" stroke="#708D81" stroke-width="0.8" stroke-opacity="0.2"/>
+  <circle cx="376" cy="238" r="3.5" fill="#8aa89b" opacity="0.8"/>
+  <rect x="384" y="234" width="6" height="2" rx="1" fill="#8aa89b" opacity="0.5"/>
+  <rect x="384" y="238" width="6" height="2" rx="1" fill="#8aa89b" opacity="0.5"/>
+  <rect x="384" y="242" width="4" height="2" rx="1" fill="#8aa89b" opacity="0.5"/>
+  <!-- "Open Source" path approximation -->
+  <rect x="396" y="234" width="60" height="8" rx="4" fill="#8aa89b" opacity="0.15"/>
 
-  <!-- Apache 2.0 badge -->
-  <rect x="498" y="320" width="100" height="26" rx="13" fill="rgba(244,213,141,0.08)" stroke="rgba(244,213,141,0.15)" stroke-width="1"/>
-  <text x="520" y="338" font-family="ui-monospace, 'SF Mono', monospace" font-size="11" font-weight="500" fill="#F4D58D">Apache 2.0</text>
+  <!-- Apache 2.0 pill -->
+  <rect x="486" y="225" width="100" height="26" rx="13" fill="#F4D58D" opacity="0.06" stroke="#F4D58D" stroke-width="0.8" stroke-opacity="0.15"/>
+  <rect x="500" y="234" width="72" height="8" rx="4" fill="#F4D58D" opacity="0.15"/>
 
-  <!-- Self-Hosted badge -->
-  <rect x="616" y="320" width="108" height="26" rx="13" fill="rgba(112,141,129,0.1)" stroke="rgba(112,141,129,0.2)" stroke-width="1"/>
-  <text x="638" y="338" font-family="ui-monospace, 'SF Mono', monospace" font-size="11" font-weight="500" fill="#8aa89b">Self-Hosted</text>
+  <!-- Self-Hosted pill -->
+  <rect x="604" y="225" width="108" height="26" rx="13" fill="#708D81" opacity="0.08" stroke="#708D81" stroke-width="0.8" stroke-opacity="0.2"/>
+  <rect x="618" y="234" width="80" height="8" rx="4" fill="#8aa89b" opacity="0.15"/>
 
-  <!-- v0.9-beta badge -->
-  <rect x="742" y="320" width="90" height="26" rx="13" fill="rgba(244,213,141,0.08)" stroke="rgba(244,213,141,0.15)" stroke-width="1"/>
-  <text x="761" y="338" font-family="ui-monospace, 'SF Mono', monospace" font-size="11" font-weight="500" fill="#F4D58D">v0.9-beta</text>
+  <!-- v0.9-beta pill -->
+  <rect x="730" y="225" width="90" height="26" rx="13" fill="#F4D58D" opacity="0.06" stroke="#F4D58D" stroke-width="0.8" stroke-opacity="0.15"/>
+  <rect x="744" y="234" width="62" height="8" rx="4" fill="#F4D58D" opacity="0.15"/>
 
-  <!-- Bottom border line -->
-  <rect x="200" y="375" width="800" height="1" fill="rgba(13,46,74,0.6)" rx="0.5"/>
+  <!-- Bottom rule -->
+  <rect x="200" y="280" width="800" height="1" fill="url(#bottomLine)"/>
 </svg>

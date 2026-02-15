@@ -236,7 +236,7 @@ npm start
 
 <p align="center">
   <a href="https://github.com/CommanderZed/Physiclaw">
-    <img src=".github/logo.svg" alt="Physiclaw" height="22" />
+    <img src=".github/logo.svg" alt="Physiclaw" height="36" />
   </a>
 </p>
 <p align="center">
