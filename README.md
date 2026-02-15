@@ -178,53 +178,66 @@ BGE-Large, E5-Mistral, Nomic-Embed, Local ONNX
 
 ---
 
-## Website Development
+## Architecture
 
-This repository contains the Physiclaw marketing/docs website, built with:
-
-- [Next.js 14](https://nextjs.org/) (App Router)
-- [React 18](https://react.dev/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Framer Motion](https://www.framer.com/motion/)
-- [Radix UI](https://www.radix-ui.com/) primitives
-- [Lucide Icons](https://lucide.dev/)
-
-### Running Locally
-
-```bash
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to view the site.
+Physiclaw is adapted from [OpenClaw](https://github.com/openclaw/openclaw) (MIT), re-engineered for enterprise bare-metal deployment with zero external dependencies.
 
 ### Project Structure
 
 ```
-src/
-├── app/
-│   ├── globals.css          # Global styles + custom scrollbar + grid bg
-│   ├── layout.tsx           # Root layout with Geist fonts
-│   └── page.tsx             # Landing page
-├── components/
-│   ├── AgentSkillMatrix.tsx  # Interactive agent roles constellation
-│   ├── ExtendMatrix.tsx      # Live YAML config viewer
-│   ├── PhysiclawLogo.tsx     # SVG logo component
-│   ├── QuickStartTerminal.tsx # Tabbed install command terminal
-│   └── SecurityMatrix.tsx    # Concentric security rings visualization
-└── lib/
-    └── utils.ts             # Utility functions
+/
+├── src/                     # Physiclaw core engine
+│   ├── agents/              # Agent execution engine, tools, workspace
+│   ├── cli/                 # CLI interface (Commander.js)
+│   ├── config/              # YAML config with Zod validation
+│   ├── daemon/              # Service management (launchd/systemd)
+│   ├── gateway/             # HTTP/WebSocket control plane
+│   ├── plugins/             # Plugin infrastructure
+│   ├── providers/           # AI model provider integrations
+│   └── security/            # Audit, scanning, hardening
+├── skills/                  # Agent persona definitions
+│   ├── sre/                 # The SRE agent
+│   ├── secops/              # The SecOps Guardian agent
+│   ├── data-architect/      # The Data Architect agent
+│   └── code-janitor/        # The Code Janitor agent
+├── config/                  # Default YAML configuration
+├── packages/                # Shared packages
+├── extensions/              # Extension plugins
+├── website/                 # Marketing landing page (Next.js)
+├── Dockerfile               # Container build
+├── docker-compose.yml       # Multi-service deployment
+└── physiclaw.mjs            # CLI entry point
 ```
 
-### Building for Production
+### Running the Engine
 
 ```bash
-npm run build
-npm start
+# Install dependencies
+pnpm install
+
+# Development mode
+pnpm dev
+
+# Build
+pnpm build
+
+# Start gateway
+node physiclaw.mjs gateway
 ```
+
+### Running the Website
+
+```bash
+cd website
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view the marketing site.
+
+### Acknowledgments
+
+Core agent runtime adapted from [OpenClaw](https://github.com/openclaw/openclaw) under the MIT license. Physiclaw strips all messaging channel integrations, adds enterprise agent personas, enforces air-gap defaults, and is released under Apache 2.0.
 
 ---
 

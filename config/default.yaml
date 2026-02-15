@@ -1,0 +1,87 @@
+# ╔═══════════════════════════════════════════════════════════════════╗
+# ║  Physiclaw — Default Configuration                              ║
+# ║  Specialized AI agents for your bare metal.                     ║
+# ║  100% On-Prem & Air-Gap Ready.                                  ║
+# ╚═══════════════════════════════════════════════════════════════════╝
+#
+# All settings below enforce on-prem, air-gapped defaults.
+# Nothing leaves your network unless you explicitly configure it.
+
+# ─── Runtime ────────────────────────────────────────────────────────
+runtime:
+  backend: "ollama"              # Default to local inference (ollama, vllm, tgi, triton)
+  model: "llama-3-70b"           # Any GGUF / safetensors weight
+  gpu_layers: "auto"             # GPU offload (auto, 0-999)
+  max_concurrent: 32             # Per-node parallelism
+
+# ─── Agent Personas ─────────────────────────────────────────────────
+agents:
+  sre:
+    name: "The SRE"
+    skill: "sre"
+    description: "Site Reliability Engineering — Prometheus, K8s, Terraform, Grafana, Alerting"
+    enabled: true
+
+  secops:
+    name: "The SecOps Guardian"
+    skill: "secops"
+    description: "Security Operations — Log Analysis, CVE Scanning, IAM, SIEM, Compliance"
+    enabled: true
+
+  data:
+    name: "The Data Architect"
+    skill: "data-architect"
+    description: "Data Engineering — SQL, ETL, Snowflake, dbt, Data Quality"
+    enabled: true
+
+  code:
+    name: "The Code Janitor"
+    skill: "code-janitor"
+    description: "Code Quality — Refactoring, Tests, Linting, CI/CD, Docs"
+    enabled: true
+
+# ─── Knowledge (RAG) ───────────────────────────────────────────────
+knowledge:
+  store: "pgvector"              # pgvector, faiss, milvus, qdrant
+  embedder: "bge-large"          # On-prem embedding model
+  chunker: "semantic"            # Document splitting strategy
+  reranker: "cross-encoder"      # Optional re-ranking pass
+
+# ─── Security ──────────────────────────────────────────────────────
+security:
+  telemetry: "off"               # No telemetry. Ever.
+  phone_home: "disabled"         # No external calls
+  audit_log: true                # Immutable audit trail
+  sandbox: "gvisor"              # Agent isolation (gvisor, seccomp, none)
+  encryption:
+    at_rest: "xchacha20"         # XChaCha20-Poly1305
+    in_transit: "mtls"           # mTLS via SPIFFE/SPIRE
+  secrets:
+    backend: "vault"             # vault, hsm, tpm, env
+    auto_rotate: true            # Auto-rotate X.509 certs
+
+# ─── Audit ─────────────────────────────────────────────────────────
+audit:
+  backend: "merkle-log"          # Tamper-evident storage
+  signing: "cosign"              # Cryptographic verification
+  export: "siem-sink"            # Compliance export target
+  retention: "forever"           # WORM retention policy
+
+# ─── Gateway ───────────────────────────────────────────────────────
+gateway:
+  bind: "127.0.0.1"             # Loopback only by default
+  port: 8090
+  auth:
+    type: "token"               # token, mtls, none (dev only)
+  cors:
+    enabled: false              # No CORS in air-gapped environments
+  discovery:
+    mdns: false                 # Disable mDNS by default
+
+# ─── Compliance ────────────────────────────────────────────────────
+compliance:
+  frameworks:
+    - "soc2-type2"
+    - "hipaa"
+    - "iso27001"
+  offline_verification: true     # Sigstore offline mode

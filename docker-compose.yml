@@ -1,0 +1,43 @@
+services:
+  physiclaw-core:
+    image: ${PHYSICLAW_IMAGE:-ghcr.io/physiclaw/core:latest}
+    environment:
+      HOME: /home/node
+      TERM: xterm-256color
+      PHYSICLAW_GATEWAY_TOKEN: ${PHYSICLAW_GATEWAY_TOKEN}
+      PHYSICLAW_TELEMETRY: "off"
+      PHYSICLAW_PHONE_HOME: "disabled"
+      PL_LICENSE: ${PL_LICENSE:-oss}
+      PL_CLUSTER_NAME: ${PL_CLUSTER_NAME:-my-agents}
+    volumes:
+      - ${PHYSICLAW_CONFIG_DIR:-./config}:/home/node/.physiclaw
+      - ${PHYSICLAW_DATA_DIR:-./data}:/home/node/.physiclaw/workspace
+    ports:
+      - "${PHYSICLAW_GATEWAY_PORT:-8090}:8090"
+    init: true
+    restart: unless-stopped
+    command:
+      [
+        "node",
+        "dist/index.js",
+        "gateway",
+        "--bind",
+        "${PHYSICLAW_GATEWAY_BIND:-lan}",
+        "--port",
+        "8090",
+      ]
+
+  physiclaw-cli:
+    image: ${PHYSICLAW_IMAGE:-ghcr.io/physiclaw/core:latest}
+    environment:
+      HOME: /home/node
+      TERM: xterm-256color
+      PHYSICLAW_GATEWAY_TOKEN: ${PHYSICLAW_GATEWAY_TOKEN}
+      PL_LICENSE: ${PL_LICENSE:-oss}
+    volumes:
+      - ${PHYSICLAW_CONFIG_DIR:-./config}:/home/node/.physiclaw
+      - ${PHYSICLAW_DATA_DIR:-./data}:/home/node/.physiclaw/workspace
+    stdin_open: true
+    tty: true
+    init: true
+    entrypoint: ["node", "dist/index.js"]
