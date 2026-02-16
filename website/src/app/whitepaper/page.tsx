@@ -118,7 +118,7 @@ export default function WhitepaperPage() {
             <p>
               Physiclaw is adapted from OpenClaw (MIT). It was re-engineered for
               enterprise bare-metal deployment with zero external dependencies. The
-              core engine includes an agent execution engine with tools and workspace,
+              core engine is TypeScript/Node.js and includes an agent execution engine with tools and workspace,
               a CLI, YAML config with validation, service management for launchd and
               systemd, an HTTP and WebSocket control plane, plugin infrastructure,
               provider integrations for AI models, and security layers for audit,

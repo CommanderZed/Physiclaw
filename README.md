@@ -49,6 +49,15 @@ Most AI agent platforms require cloud connectivity, send telemetry upstream, or 
 
 ---
 
+## Whitepaper (Enterprise theory & security)
+
+For the full design rationale, security architecture, and enterprise deployment story, see:
+
+- **[Whitepaper (in-repo)](docs/WHITEPAPER.md)** — Markdown in this repo
+- **[Whitepaper (web)](https://www.physiclaw.dev/whitepaper)** — Same content on the site
+
+---
+
 ## Quick Start
 
 ### One-liner
@@ -180,7 +189,7 @@ BGE-Large, E5-Mistral, Nomic-Embed, Local ONNX
 
 ## Architecture
 
-Physiclaw is adapted from [OpenClaw](https://github.com/openclaw/openclaw) (MIT), re-engineered for enterprise bare-metal deployment with zero external dependencies.
+Physiclaw is adapted from [OpenClaw](https://github.com/openclaw/openclaw) (MIT), re-engineered for enterprise bare-metal deployment with zero external dependencies. The **core agent orchestration is TypeScript/Node.js** (same as OpenClaw). Model inference is delegated to configurable backends (vLLM, TGI, Ollama, etc.); there is no Python runtime in this repository.
 
 ### Project Structure
 
