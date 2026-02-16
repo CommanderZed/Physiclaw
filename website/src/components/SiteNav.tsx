@@ -26,6 +26,13 @@ export default function SiteNav({ logoHref = "/", showDocsLink = false }: SiteNa
 
   const navLinks = (
     <>
+      <Link
+        href="/demo"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-sage-light bg-navy-300/60 border border-navy-200/60 hover:border-sage/15 hover:text-gold-light transition-all"
+        onClick={() => setMobileOpen(false)}
+      >
+        Demo
+      </Link>
       {showDocsLink && (
         <Link
           href="/docs"
@@ -96,6 +103,13 @@ export default function SiteNav({ logoHref = "/", showDocsLink = false }: SiteNa
       {mobileOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-navy border-b border-navy-200/60 shadow-lg">
           <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-2">
+            <Link
+              href="/demo"
+              className="px-3 py-2.5 rounded-lg text-sm font-medium text-sage-light hover:bg-navy-300/60 transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Demo
+            </Link>
             {showDocsLink && (
               <Link
                 href="/docs"

@@ -73,7 +73,7 @@ function DocSections(): DocSection[] {
         <>
           <h3 className="text-lg font-semibold text-gold-light mt-6 mb-2">One-liner</h3>
           <pre className="bg-navy-300/50 border border-navy-200/50 rounded-lg p-4 text-sm text-sage overflow-x-auto mb-6">
-{`curl -fsSL https://get.physiclaw.dev | sh -s -- \\
+{`curl -fsSL https://physiclaw.dev | sh -s -- \\
   --cluster-name my-agents \\
   --enable-gpu \\
   --license oss`}
@@ -91,7 +91,7 @@ function DocSections(): DocSection[] {
           </pre>
           <h3 className="text-lg font-semibold text-gold-light mt-6 mb-2">Helm (Kubernetes)</h3>
           <pre className="bg-navy-300/50 border border-navy-200/50 rounded-lg p-4 text-sm text-sage overflow-x-auto mb-6">
-{`helm repo add physiclaw https://charts.physiclaw.dev
+{`helm repo add physiclaw https://physiclaw.dev
 helm repo update
 
 helm install physiclaw-core physiclaw/core \\

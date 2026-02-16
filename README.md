@@ -65,7 +65,7 @@ For the full design rationale, security architecture, and enterprise deployment 
 ### One-liner
 
 ```bash
-curl -fsSL https://get.physiclaw.dev | sh -s -- \
+curl -fsSL https://physiclaw.dev | sh -s -- \
   --cluster-name my-agents \
   --enable-gpu \
   --license oss
@@ -87,7 +87,7 @@ docker run -d \
 ### Helm (Kubernetes)
 
 ```bash
-helm repo add physiclaw https://charts.physiclaw.dev
+helm repo add physiclaw https://physiclaw.dev
 helm repo update
 
 helm install physiclaw-core physiclaw/core \

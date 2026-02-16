@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Github,
   ChevronDown,
@@ -41,6 +42,12 @@ export default function Home() {
           </p>
 
           <div className="flex justify-center gap-4 mb-16">
+            <Link
+              href="/demo"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-sage-light bg-navy-300/60 border border-navy-200/60 hover:border-sage/15 hover:text-gold-light transition-all"
+            >
+              Try Demo
+            </Link>
             <a
               href="https://github.com/CommanderZed/Physiclaw"
               target="_blank"

@@ -8,7 +8,7 @@ const tabs = [
   {
     id: "oneliner",
     label: "One-liner",
-    command: `curl -fsSL https://get.physiclaw.dev | sh -s -- \\
+    command: `curl -fsSL https://physiclaw.dev | sh -s -- \\
   --cluster-name my-agents \\
   --enable-gpu \\
   --license oss`,
@@ -28,7 +28,7 @@ const tabs = [
   {
     id: "helm",
     label: "Helm",
-    command: `helm repo add physiclaw https://charts.physiclaw.dev
+    command: `helm repo add physiclaw https://physiclaw.dev
 helm repo update
 
 helm install physiclaw-core physiclaw/core \\

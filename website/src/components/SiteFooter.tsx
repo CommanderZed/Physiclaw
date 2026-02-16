@@ -13,6 +13,9 @@ export default function SiteFooter() {
             <PhysiclawLogo height={20} />
           </Link>
           <div className="flex items-center gap-6 text-sm text-sage-dim">
+            <Link href="/demo" className="hover:text-gold-light transition-colors">
+              Demo
+            </Link>
             <Link href="/docs" className="hover:text-gold-light transition-colors">
               Docs
             </Link>
