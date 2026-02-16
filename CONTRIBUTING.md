@@ -1,111 +1,64 @@
-# Contributing to OpenClaw
+# Contributing to Physiclaw
 
-Welcome to the lobster tank! 🦞
+Thank you for your interest in Physiclaw. We welcome contributions that align with our goal: **open-source agent orchestration that runs entirely on your infrastructure**—no SaaS, no telemetry, no phone-home.
 
 ## Quick Links
 
-- **GitHub:** https://github.com/openclaw/openclaw
-- **Discord:** https://discord.gg/qkhbAGHRBT
-- **X/Twitter:** [@steipete](https://x.com/steipete) / [@openclaw](https://x.com/openclaw)
+- **Repository:** [github.com/CommanderZed/Physiclaw](https://github.com/CommanderZed/Physiclaw)
+- **Site & docs:** [www.physiclaw.dev](https://www.physiclaw.dev)
+- **X (Twitter):** [@physiclaw](https://x.com/physiclaw)
+- **Whitepaper (design & security):** [docs/WHITEPAPER.md](docs/WHITEPAPER.md) · [physiclaw.dev/whitepaper](https://www.physiclaw.dev/whitepaper)
 
-## Maintainers
+## Physiclaw at a glance
 
-- **Peter Steinberger** - Benevolent Dictator
-  - GitHub: [@steipete](https://github.com/steipete) · X: [@steipete](https://x.com/steipete)
+- **Air-gap ready** — Runs fully offline; no external trust boundaries.
+- **Self-hosted** — Deploy on bare metal, VMs, or Kubernetes.
+- **Zero telemetry** — Nothing leaves your network.
+- **Enterprise agent personas** — SRE, SecOps Guardian, Data Architect, Code Janitor; each with a defined toolchain and policy.
+- **Config-driven** — YAML for runtimes, vector stores, audit backends; hot-swappable backends (vLLM, TGI, Ollama, etc.).
 
-- **Shadow** - Discord + Slack subsystem
-  - GitHub: [@thewilloftheshadow](https://github.com/thewilloftheshadow) · X: [@4shad0wed](https://x.com/4shad0wed)
+Contributions that strengthen security, clarity, or on-prem/air-gap operation are especially valued.
 
-- **Vignesh** - Memory (QMD), formal modeling, TUI, and Lobster
-  - GitHub: [@vignesh07](https://github.com/vignesh07) · X: [@\_vgnsh](https://x.com/_vgnsh)
+## How to contribute
 
-- **Jos** - Telegram, API, Nix mode
-  - GitHub: [@joshp123](https://github.com/joshp123) · X: [@jjpcodes](https://x.com/jjpcodes)
+1. **Bugs & small fixes** — Open a PR with a clear description and steps to reproduce (if applicable).
+2. **New features or architecture** — Open a [GitHub Discussion](https://github.com/CommanderZed/Physiclaw/discussions) or an issue first so we can align with the roadmap.
+3. **Questions** — Use [GitHub Discussions](https://github.com/CommanderZed/Physiclaw/discussions) or open an issue.
 
-- **Christoph Nakazawa** - JS Infra
-  - GitHub: [@cpojer](https://github.com/cpojer) · X: [@cnakazawa](https://x.com/cnakazawa)
+## Before you open a PR
 
-- **Gustavo Madeira Santana** - Multi-agents, CLI, web UI
-  - GitHub: [@gumadeiras](https://github.com/gumadeiras) · X: [@gumadeiras](https://x.com/gumadeiras)
+- Test locally with your Physiclaw setup (gateway, config, and any affected agent/skill).
+- Run: `pnpm build && pnpm check && pnpm test`
+- Ensure CI checks pass.
+- Keep PRs focused (one logical change per PR).
+- Describe **what** changed and **why** in the PR description.
 
-- **Maximilian Nussbaumer** - DevOps, CI, Code Sanity
-  - GitHub: [@quotentiroler](https://github.com/quotentiroler) · X: [@quotentiroler](https://x.com/quotentiroler)
+## AI-assisted contributions
 
-## How to Contribute
+Contributions written or refined with AI tools (e.g. Claude, Codex, Copilot) are welcome. For transparency and easier review:
 
-1. **Bugs & small fixes** → Open a PR!
-2. **New features / architecture** → Start a [GitHub Discussion](https://github.com/openclaw/openclaw/discussions) or ask in Discord first
-3. **Questions** → Discord #setup-help
+- Mark the PR as AI-assisted in the title or description.
+- Note how much you tested (e.g. untested / smoke-tested / fully tested).
+- If helpful, share the prompts or context you used.
+- Confirm you understand what the code does and that it fits Physiclaw’s design.
 
-## Before You PR
+## Current focus & roadmap
 
-- Test locally with your OpenClaw instance
-- Run tests: `pnpm build && pnpm check && pnpm test`
-- Ensure CI checks pass
-- Keep PRs focused (one thing per PR)
-- Describe what & why
+We are especially interested in:
 
-## Control UI Decorators
+- **Stability** — Edge cases in gateway, config loading, and agent execution.
+- **Agent personas & skills** — SRE, SecOps, Data Architect, Code Janitor; tool policies and guardrails.
+- **Security & audit** — Hardening, audit backends, and alignment with the [whitepaper](docs/WHITEPAPER.md) security model.
+- **Config & extensibility** — YAML schema, validation, and plugin behavior.
+- **Docs** — Clarity for deploy, config, and air-gap/enterprise use.
 
-The Control UI uses Lit with **legacy** decorators (current Rollup parsing does not support
-`accessor` fields required for standard decorators). When adding reactive fields, keep the
-legacy style:
+Check [GitHub Issues](https://github.com/CommanderZed/Physiclaw/issues) for open work and “good first issue” labels.
 
-```ts
-@state() foo = "bar";
-@property({ type: Number }) count = 0;
-```
+## Reporting a vulnerability
 
-The root `tsconfig.json` is configured for legacy decorators (`experimentalDecorators: true`)
-with `useDefineForClassFields: false`. Avoid flipping these unless you are also updating the UI
-build tooling to support standard decorators.
+We take security seriously. Please report vulnerabilities **privately** so we can fix them before public disclosure.
 
-## AI/Vibe-Coded PRs Welcome! 🤖
+- **Where to report:** Use the [GitHub Security tab](https://github.com/CommanderZed/Physiclaw/security) → “Report a vulnerability,” or open a [private security advisory](https://github.com/CommanderZed/Physiclaw/security/advisories/new). Do not report sensitive issues in public issues or discussions.
+- **Scope:** This repository (core engine, CLI, gateway, config, agents, skills, and docs). For full reporting expectations and handling, see [SECURITY.md](SECURITY.md).
 
-Built with Codex, Claude, or other AI tools? **Awesome - just mark it!**
-
-Please include in your PR:
-
-- [ ] Mark as AI-assisted in the PR title or description
-- [ ] Note the degree of testing (untested / lightly tested / fully tested)
-- [ ] Include prompts or session logs if possible (super helpful!)
-- [ ] Confirm you understand what the code does
-
-AI PRs are first-class citizens here. We just want transparency so reviewers know what to look for.
-
-## Current Focus & Roadmap 🗺
-
-We are currently prioritizing:
-
-- **Stability**: Fixing edge cases in channel connections (WhatsApp/Telegram).
-- **UX**: Improving the onboarding wizard and error messages.
-- **Skills**: For skill contributions, head to [ClawHub](https://clawhub.ai/) — the community hub for OpenClaw skills.
-- **Performance**: Optimizing token usage and compaction logic.
-
-Check the [GitHub Issues](https://github.com/openclaw/openclaw/issues) for "good first issue" labels!
-
-## Report a Vulnerability
-
-We take security reports seriously. Report vulnerabilities directly to the repository where the issue lives:
-
-- **Core CLI and gateway** — [openclaw/openclaw](https://github.com/openclaw/openclaw)
-- **macOS desktop app** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/macos)
-- **iOS app** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/ios)
-- **Android app** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/android)
-- **ClawHub** — [openclaw/clawhub](https://github.com/openclaw/clawhub)
-- **Trust and threat model** — [openclaw/trust](https://github.com/openclaw/trust)
-
-For issues that don't fit a specific repo, or if you're unsure, email **security@openclaw.ai** and we'll route it.
-
-### Required in Reports
-
-1. **Title**
-2. **Severity Assessment**
-3. **Impact**
-4. **Affected Component**
-5. **Technical Reproduction**
-6. **Demonstrated Impact**
-7. **Environment**
-8. **Remediation Advice**
-
-Reports without reproduction steps, demonstrated impact, and remediation advice will be deprioritized. Given the volume of AI-generated scanner findings, we must ensure we're receiving vetted reports from researchers who understand the issues.
+Thank you for helping keep Physiclaw safe and useful for everyone.

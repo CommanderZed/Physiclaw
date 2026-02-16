@@ -264,5 +264,6 @@ Core agent runtime adapted from [OpenClaw](https://github.com/openclaw/openclaw)
   </a>
 </p>
 <p align="center">
-  <sub>Built by the <a href="https://github.com/CommanderZed/Physiclaw">Physiclaw</a> Contributors</sub>
+  <sub>Built by the <a href="https://github.com/CommanderZed/Physiclaw">Physiclaw</a> Contributors</sub><br>
+  <sub><a href="https://github.com/CommanderZed/Physiclaw">GitHub</a> · <a href="https://x.com/physiclaw">X</a></sub>
 </p>

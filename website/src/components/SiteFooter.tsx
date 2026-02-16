@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Github } from "lucide-react";
+import { Github, Twitter } from "lucide-react";
 import PhysiclawLogo from "@/components/PhysiclawLogo";
 
 export default function SiteFooter() {
@@ -30,6 +30,16 @@ export default function SiteFooter() {
             >
               <Github className="w-3.5 h-3.5" />
               GitHub
+            </a>
+            <a
+              href="https://x.com/physiclaw"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-gold-light transition-colors flex items-center gap-1.5"
+              aria-label="X (Twitter)"
+            >
+              <Twitter className="w-3.5 h-3.5" />
+              X
             </a>
             <a
               href="https://www.apache.org/licenses/LICENSE-2.0.txt"

@@ -1,116 +1,84 @@
 # Security Policy
 
-If you believe you've found a security issue in OpenClaw, please report it privately.
+Physiclaw is designed for environments where **data sovereignty and air-gap readiness** matter. We take security reports seriously and ask that you report vulnerabilities privately so we can address them before public disclosure.
 
-## Reporting
+## Reporting a vulnerability
 
-Report vulnerabilities directly to the repository where the issue lives:
+**Do not report security issues in public issues or discussions.**
 
-- **Core CLI and gateway** — [openclaw/openclaw](https://github.com/openclaw/openclaw)
-- **macOS desktop app** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/macos)
-- **iOS app** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/ios)
-- **Android app** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/android)
-- **ClawHub** — [openclaw/clawhub](https://github.com/openclaw/clawhub)
-- **Trust and threat model** — [openclaw/trust](https://github.com/openclaw/trust)
+- **Preferred:** Use the [GitHub Security tab](https://github.com/CommanderZed/Physiclaw/security) → **Report a vulnerability**, or open a [private security advisory](https://github.com/CommanderZed/Physiclaw/security/advisories/new).
+- **Scope:** This repository only — core engine, CLI, gateway, config, agents, skills, plugins, and documentation. There are no separate mobile apps or external hubs; everything relevant lives in [CommanderZed/Physiclaw](https://github.com/CommanderZed/Physiclaw).
 
-For issues that don't fit a specific repo, or if you're unsure, email **security@openclaw.ai** and we'll route it.
+### What to include in your report
 
-For full reporting instructions see our [Trust page](https://trust.openclaw.ai).
+1. **Title** — Short, clear summary.
+2. **Severity** — Your assessment (e.g. critical / high / medium / low).
+3. **Impact** — What an attacker could do or what data could be affected.
+4. **Affected component** — e.g. gateway, CLI, config loading, a specific agent/skill.
+5. **Technical reproduction** — Step-by-step steps to reproduce.
+6. **Demonstrated impact** — Evidence that the issue is exploitable or has real impact.
+7. **Environment** — OS, Node version, deployment mode (e.g. bare metal, Docker).
+8. **Remediation advice** — If you have suggestions for a fix or mitigation.
 
-### Required in Reports
+Reports that include reproduction steps, impact, and remediation advice are prioritized. We receive many low-value or automated findings; vetted reports from researchers who understand the issue help us respond quickly and appropriately.
 
-1. **Title**
-2. **Severity Assessment**
-3. **Impact**
-4. **Affected Component**
-5. **Technical Reproduction**
-6. **Demonstrated Impact**
-7. **Environment**
-8. **Remediation Advice**
+## Security & trust
 
-Reports without reproduction steps, demonstrated impact, and remediation advice will be deprioritized. Given the volume of AI-generated scanner findings, we must ensure we're receiving vetted reports from researchers who understand the issues.
+Physiclaw is maintained by the [Physiclaw Contributors](https://github.com/CommanderZed/Physiclaw/graphs/contributors). Security reports are handled by maintainers with access to the repository. We do not have a dedicated bug bounty or budget for paid reports; we still encourage responsible disclosure so we can fix issues and credit reporters where appropriate.
 
-## Security & Trust
+## Operational guidance
 
-**Jamieson O'Reilly** ([@theonejvo](https://twitter.com/theonejvo)) is Security & Trust at OpenClaw. Jamieson is the founder of [Dvuln](https://dvuln.com) and brings extensive experience in offensive security, penetration testing, and security program development.
+Physiclaw is built for **on-prem and air-gap** deployment. The following practices align with our design and reduce risk.
 
-## Bug Bounties
+### Gateway and control plane
 
-OpenClaw is a labor of love. There is no bug bounty program and no budget for paid reports. Please still disclose responsibly so we can fix issues quickly.
-The best way to help the project right now is by sending PRs.
+- The HTTP/WebSocket gateway is intended for **local or internal use**. Do not expose it directly to the public internet unless you add strong auth, TLS, and network controls.
+- Prefer binding to **loopback** (`127.0.0.1` / `::1`) when the gateway is only used from the same host. Use SSH tunnels, Tailscale, or a reverse proxy with auth if you need remote access.
+- Keep config (e.g. `physiclaw.yaml`) and any secrets (API keys, tokens) out of version control and restrict file permissions.
 
-## Maintainers: GHSA Updates via CLI
+### Config and tool policy
 
-When patching a GHSA via `gh api`, include `X-GitHub-Api-Version: 2022-11-28` (or newer). Without it, some fields (notably CVSS) may not persist even if the request returns 200.
+- Use YAML config to restrict tool access, workspace paths, and agent capabilities. See the [whitepaper](docs/WHITEPAPER.md) and [docs](https://www.physiclaw.dev/docs) for the security model and hardening options.
+- Run the gateway and agents with the least privilege required (dedicated user, minimal capabilities in containers).
 
-## Out of Scope
+### Threat model and design
 
-- Public Internet Exposure
-- Using OpenClaw in ways that the docs recommend not to
-- Prompt injection attacks
+For defense-in-depth, audit, and compliance context, see:
 
-## Operational Guidance
+- **[Whitepaper](docs/WHITEPAPER.md)** — Security architecture (zero-trust, encryption, hardware secrets, observability, air-gap).
+- **Docs:** [www.physiclaw.dev/docs](https://www.physiclaw.dev/docs) (including security and enterprise deployment).
 
-For threat model + hardening guidance (including `openclaw security audit --deep` and `--fix`), see:
+## Runtime requirements
 
-- `https://docs.openclaw.ai/gateway/security`
+### Node.js
 
-### Tool filesystem hardening
-
-- `tools.exec.applyPatch.workspaceOnly: true` (recommended): keeps `apply_patch` writes/deletes within the configured workspace directory.
-- `tools.fs.workspaceOnly: true` (optional): restricts `read`/`write`/`edit`/`apply_patch` paths to the workspace directory.
-- Avoid setting `tools.exec.applyPatch.workspaceOnly: false` unless you fully trust who can trigger tool execution.
-
-### Web Interface Safety
-
-OpenClaw's web interface (Gateway Control UI + HTTP endpoints) is intended for **local use only**.
-
-- Recommended: keep the Gateway **loopback-only** (`127.0.0.1` / `::1`).
-  - Config: `gateway.bind="loopback"` (default).
-  - CLI: `openclaw gateway run --bind loopback`.
-- Do **not** expose it to the public internet (no direct bind to `0.0.0.0`, no public reverse proxy). It is not hardened for public exposure.
-- If you need remote access, prefer an SSH tunnel or Tailscale serve/funnel (so the Gateway still binds to loopback), plus strong Gateway auth.
-- The Gateway HTTP surface includes the canvas host (`/__openclaw__/canvas/`, `/__openclaw__/a2ui/`). Treat canvas content as sensitive/untrusted and avoid exposing it beyond loopback unless you understand the risk.
-
-## Runtime Requirements
-
-### Node.js Version
-
-OpenClaw requires **Node.js 22.12.0 or later** (LTS). This version includes important security patches:
-
-- CVE-2025-59466: async_hooks DoS vulnerability
-- CVE-2026-21636: Permission model bypass vulnerability
-
-Verify your Node.js version:
+Physiclaw requires **Node.js 22.12.0 or later** (see `engines` in `package.json`). This version includes important security fixes. Verify:
 
 ```bash
-node --version  # Should be v22.12.0 or later
+node --version   # Should be v22.12.0 or later
 ```
 
-### Docker Security
+### Docker
 
-When running OpenClaw in Docker:
+When running in Docker:
 
-1. The official image runs as a non-root user (`node`) for reduced attack surface
-2. Use `--read-only` flag when possible for additional filesystem protection
-3. Limit container capabilities with `--cap-drop=ALL`
+- Prefer running the process as a **non-root** user inside the container.
+- Use read-only filesystem and minimal capabilities where possible (e.g. `--read-only`, `--cap-drop=ALL`), and mount only necessary volumes.
 
-Example secure Docker run:
+## Out of scope
 
-```bash
-docker run --read-only --cap-drop=ALL \
-  -v openclaw-data:/app/data \
-  openclaw/openclaw:latest
-```
+The following are generally **out of scope** for security vulnerability reports:
 
-## Security Scanning
+- **Prompt injection** — Using crafted prompts to change model behavior, unless it leads to a concrete bypass of access control or policy (e.g. escaping sandbox, accessing unauthorized tools).
+- **Public internet exposure** — Deploying the gateway or control plane in a way that contradicts our documentation (e.g. binding to `0.0.0.0` without auth and then reporting “exposed service”).
+- **Theoretical issues** — Findings without a reproducible path to impact or that require unrealistic preconditions.
 
-This project uses `detect-secrets` for automated secret detection in CI/CD.
-See `.detect-secrets.cfg` for configuration and `.secrets.baseline` for the baseline.
+If you are unsure whether something is in scope, report it privately and we will triage.
 
-Run locally:
+## Security scanning
 
-```bash
-pip install detect-secrets==1.5.0
-detect-secrets scan --baseline .secrets.baseline
-```
+If we add automated secret detection or dependency scanning, we will document it here. In the meantime, avoid committing secrets, API keys, or credentials; use environment variables or a secrets manager and keep config files out of public history.
+
+---
+
+Thank you for helping keep Physiclaw safe for teams that depend on it.
