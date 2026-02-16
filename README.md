@@ -60,6 +60,8 @@ For the full design rationale, security architecture, and enterprise deployment 
 
 ## Quick Start
 
+**Alpha.** Container image and Helm chart are not yet published; use the one-liner or build from source for now.
+
 ### One-liner
 
 ```bash
@@ -69,7 +71,7 @@ curl -fsSL https://get.physiclaw.dev | sh -s -- \
   --license oss
 ```
 
-### Docker
+### Docker (Coming Beta v0.2)
 
 ```bash
 docker run -d \
