@@ -106,15 +106,14 @@ const integrations: Integration[] = [
 
 function IntegrationIcon({
   iconSlug,
-  name,
   className,
 }: {
   iconSlug: string | null;
-  name: string;
   className?: string;
 }) {
   if (iconSlug) {
     return (
+      // eslint-disable-next-line @next/next/no-img-element -- external CDN SVGs
       <img
         src={`${SIMPLE_ICONS_CDN}/${iconSlug}.svg`}
         alt=""
@@ -136,7 +135,7 @@ export default function IntegrationGrid() {
           className="flex items-center gap-4 rounded-xl border border-navy-200/50 bg-navy-300/40 px-4 py-3 hover:border-navy-200/80 hover:bg-navy-300/60 transition-colors"
         >
           <div className="flex shrink-0 w-10 h-10 rounded-lg bg-navy-200/60 flex items-center justify-center [&_img]:brightness-0 [&_img]:invert-[0.9]">
-            <IntegrationIcon iconSlug={item.iconSlug} name={item.name} className="w-5 h-5" />
+            <IntegrationIcon iconSlug={item.iconSlug} className="w-5 h-5" />
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-gold-light truncate">

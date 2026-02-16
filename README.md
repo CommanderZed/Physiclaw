@@ -235,6 +235,17 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to view the marketing site.
 
+### Deploy the website to Vercel
+
+1. Push your repo to GitHub (if you haven’t already).
+2. Go to [vercel.com](https://vercel.com) and sign in with GitHub.
+3. Click **Add New…** → **Project** and import the `Physiclaw` repository.
+4. Set **Root Directory** to `website` (the Next.js app lives in this subdirectory).
+5. Leave **Framework Preset** as Next.js and **Build Command** / **Output Directory** as default.
+6. Click **Deploy**. Vercel will build and host the site and give you a URL (e.g. `your-project.vercel.app`).
+
+Later pushes to `main` will trigger automatic deployments. Optional: add a custom domain in the Vercel project **Settings → Domains**.
+
 ### Acknowledgments
 
 Core agent runtime adapted from [OpenClaw](https://github.com/openclaw/openclaw) under the MIT license. Physiclaw strips all messaging channel integrations, adds enterprise agent personas, enforces air-gap defaults, and is released under Apache 2.0.

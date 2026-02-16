@@ -167,6 +167,7 @@ export default function AgentSkillMatrix() {
     return 0.03;
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- signature matches edge callback (a, b)
   const getEdgeColor = (a: string, b: string) => {
     if (!activePersona) return "#0d2e4a";
     const skillA = skills.find((s) => s.id === a);
