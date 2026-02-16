@@ -13,7 +13,8 @@ import AgentSkillMatrix from "@/components/AgentSkillMatrix";
 import SecurityMatrix from "@/components/SecurityMatrix";
 import ExtendMatrix from "@/components/ExtendMatrix";
 import IntegrationGrid from "@/components/IntegrationGrid";
-import PhysiclawLogo from "@/components/PhysiclawLogo";
+import SiteNav from "@/components/SiteNav";
+import SiteFooter from "@/components/SiteFooter";
 
 // ─── Page ──────────────────────────────────────────────────────────
 
@@ -23,32 +24,7 @@ export default function Home() {
       {/* Ambient top glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-gold/[0.03] rounded-full blur-[120px] pointer-events-none" />
 
-      {/* ═══════════ NAV ═══════════ */}
-      <nav className="relative z-20 border-b border-navy-200/60">
-        <div className="max-w-7xl mx-auto px-6 h-16 grid grid-cols-3 items-center">
-          <div className="flex justify-start" />
-          <a href="/" className="flex justify-center" aria-label="Physiclaw home">
-            <PhysiclawLogo height={26} />
-          </a>
-          <div className="flex justify-end items-center gap-2">
-            <a
-              href="/whitepaper"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-sage-light bg-navy-300/60 border border-navy-200/60 hover:border-sage/15 hover:text-gold-light transition-all"
-            >
-              Whitepaper
-            </a>
-            <a
-              href="https://github.com/physiclaw"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center p-2 rounded-lg text-sage-light bg-navy-300/60 border border-navy-200/60 hover:border-sage/15 hover:text-gold-light transition-all"
-              aria-label="GitHub"
-            >
-              <Github className="w-4 h-4" />
-            </a>
-          </div>
-        </div>
-      </nav>
+      <SiteNav logoHref="/" showDocsLink />
 
       {/* ═══════════ HERO ═══════════ */}
       <section className="relative z-10 pt-20 pb-8 px-6" id="quick-start">
@@ -230,44 +206,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════ FOOTER ═══════════ */}
-      <footer className="relative z-10 border-t border-navy-200/60">
-        <div className="max-w-7xl mx-auto px-6 py-10">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            {/* Left */}
-            <PhysiclawLogo height={20} />
-
-            {/* Center links */}
-            <div className="flex items-center gap-6 text-sm text-sage-dim">
-              <a href="/whitepaper" className="hover:text-gold-light transition-colors">
-                Whitepaper
-              </a>
-              <a
-                href="https://github.com/physiclaw"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-gold-light transition-colors flex items-center gap-1.5"
-              >
-                <Github className="w-3.5 h-3.5" />
-                GitHub
-              </a>
-              <a
-                href="https://github.com/physiclaw/core/blob/main/LICENSE"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-gold-light transition-colors"
-              >
-                Apache 2.0
-              </a>
-            </div>
-
-            {/* Right */}
-            <p className="text-xs text-sage-dim font-mono">
-              &copy; {new Date().getFullYear()} Physiclaw Contributors
-            </p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
