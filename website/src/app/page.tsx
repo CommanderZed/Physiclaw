@@ -2,15 +2,17 @@
 
 import {
   Github,
-  ExternalLink,
-  Activity,
   Zap,
   ChevronDown,
+  Server,
+  Plug,
+  MessageSquare,
 } from "lucide-react";
 import QuickStartTerminal from "@/components/QuickStartTerminal";
 import AgentSkillMatrix from "@/components/AgentSkillMatrix";
 import SecurityMatrix from "@/components/SecurityMatrix";
 import ExtendMatrix from "@/components/ExtendMatrix";
+import IntegrationGrid from "@/components/IntegrationGrid";
 import PhysiclawLogo from "@/components/PhysiclawLogo";
 
 // ─── Page ──────────────────────────────────────────────────────────
@@ -24,45 +26,52 @@ export default function Home() {
       {/* ═══════════ NAV ═══════════ */}
       <nav className="relative z-20 border-b border-navy-200/60">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <PhysiclawLogo height={26} />
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-gold/10 text-gold border border-gold/15">
-              v0.9-beta
-            </span>
+          <PhysiclawLogo height={26} />
+          <div className="flex items-center gap-2">
+            <a
+              href="/whitepaper"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-sage-light bg-navy-300/60 border border-navy-200/60 hover:border-sage/15 hover:text-gold-light transition-all"
+            >
+              Whitepaper
+            </a>
+            <a
+              href="https://github.com/physiclaw"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center p-2 rounded-lg text-sage-light bg-navy-300/60 border border-navy-200/60 hover:border-sage/15 hover:text-gold-light transition-all"
+              aria-label="GitHub"
+            >
+              <Github className="w-4 h-4" />
+            </a>
           </div>
-          <a
-            href="https://github.com/physiclaw"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-sage-light bg-navy-300/60 border border-navy-200/60 hover:border-sage/15 hover:text-gold-light transition-all"
-          >
-            <Github className="w-4 h-4" />
-            <span className="hidden sm:inline">GitHub</span>
-          </a>
         </div>
       </nav>
 
       {/* ═══════════ HERO ═══════════ */}
       <section className="relative z-10 pt-20 pb-8 px-6" id="quick-start">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono font-medium bg-navy-300/60 text-sage border border-navy-200/60 mb-8">
-            <Activity className="w-3.5 h-3.5 text-sage-light" />
-            Open Source &middot; Apache 2.0 &middot; Self-Hosted
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-6" style={{ color: "#f7e2aa" }}>
-            Run AI agents
-            <br />
-            on{" "}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-4" style={{ color: "#f7e2aa" }}>
+            Functional AI agents on{" "}
             <span className="text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(to right, #F4D58D, #BF0603)" }}>
               your hardware
             </span>
             .
           </h1>
 
-          <p className="text-lg sm:text-xl text-sage max-w-2xl mx-auto leading-relaxed mb-12">
-            Open-source agent orchestration. Air-gapped, self-hosted,
-            no SaaS dependency. You own the entire stack.
+          <p className="text-xs font-mono text-sage-dim uppercase tracking-widest mb-2">What it is</p>
+          <p className="text-lg sm:text-xl text-sage-light max-w-2xl mx-auto font-medium mb-6" id="what-it-is">
+            Open-source software that runs AI agents entirely on your own servers. No cloud dependency, no telemetry, no vendor lock-in.
+          </p>
+
+          <div className="max-w-2xl mx-auto mb-10 rounded-xl border border-navy-200/50 bg-navy-300/30 px-6 py-5 text-left">
+            <p className="text-xs font-mono text-sage-dim uppercase tracking-widest mb-3">Why it matters</p>
+            <p className="text-sage leading-relaxed">
+              Most AI agent platforms require the cloud and send your data upstream. Physiclaw runs inside your perimeter. You keep full control, meet air-gap and compliance requirements, and own the entire stack.
+            </p>
+          </div>
+
+          <p className="text-base sm:text-lg text-sage max-w-2xl mx-auto leading-relaxed mb-12">
+            Deploy on bare metal, VMs, or Kubernetes. Apache 2.0. You own the stack.
           </p>
 
           <div className="flex justify-center gap-4 mb-16">
@@ -86,6 +95,34 @@ export default function Home() {
 
           {/* Quick Start Terminal */}
           <QuickStartTerminal />
+
+          {/* How it works */}
+          <div className="mt-16 max-w-4xl mx-auto" id="how-it-works">
+            <p className="text-xs font-mono text-sage-dim uppercase tracking-widest mb-6 text-center">How it works</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-12 h-12 rounded-xl bg-navy-300/60 border border-navy-200/50 flex items-center justify-center mb-3">
+                  <Server className="w-6 h-6 text-gold" />
+                </div>
+                <p className="text-sm font-semibold text-gold-light mb-1">1. Deploy on your infrastructure</p>
+                <p className="text-xs text-sage-dim">Run Physiclaw on bare metal, VMs, or Kubernetes. Everything stays inside your perimeter.</p>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <div className="w-12 h-12 rounded-xl bg-navy-300/60 border border-navy-200/50 flex items-center justify-center mb-3">
+                  <Plug className="w-6 h-6 text-gold" />
+                </div>
+                <p className="text-sm font-semibold text-gold-light mb-1">2. Connect to your tools</p>
+                <p className="text-xs text-sage-dim">Agents plug into Prometheus, K8s, Vault, Slack, and other on-prem services you already use.</p>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <div className="w-12 h-12 rounded-xl bg-navy-300/60 border border-navy-200/50 flex items-center justify-center mb-3">
+                  <MessageSquare className="w-6 h-6 text-gold" />
+                </div>
+                <p className="text-sm font-semibold text-gold-light mb-1">3. Chat or command; agents run</p>
+                <p className="text-xs text-sage-dim">From terminal or API you assign tasks. Agents execute on your stack with no data leaving your network.</p>
+              </div>
+            </div>
+          </div>
 
           <div className="mt-12 flex justify-center">
             <a href="#agents" className="text-sage-dim hover:text-sage transition-colors">
@@ -117,6 +154,30 @@ export default function Home() {
           </div>
 
           <AgentSkillMatrix />
+        </div>
+      </section>
+
+      {/* ═══════════ INTEGRATIONS ═══════════ */}
+      <section className="relative z-10 py-24 px-6" id="integrations">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-14">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-navy-200/60" />
+              <span className="text-xs font-mono text-sage-dim uppercase tracking-widest">
+                Integrations
+              </span>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-navy-200/60" />
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl font-bold text-center text-gold-light mb-4">
+              Common enterprise on-prem services
+            </h2>
+            <p className="text-center text-sage max-w-xl mx-auto">
+              Connect agents to the tools you already run inside your perimeter.
+            </p>
+          </div>
+
+          <IntegrationGrid />
         </div>
       </section>
 
@@ -183,20 +244,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 py-10">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             {/* Left */}
-            <div className="flex items-center gap-6">
-              <PhysiclawLogo height={20} />
-              <div className="h-4 w-px bg-navy-200/60" />
-              <div className="flex items-center gap-1.5 text-xs font-mono">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sage-light opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-sage" />
-                </span>
-                <span className="text-sage-light">All Systems Green</span>
-              </div>
-            </div>
+            <PhysiclawLogo height={20} />
 
             {/* Center links */}
             <div className="flex items-center gap-6 text-sm text-sage-dim">
+              <a href="/whitepaper" className="hover:text-gold-light transition-colors">
+                Whitepaper
+              </a>
               <a
                 href="https://github.com/physiclaw"
                 target="_blank"
@@ -205,15 +259,6 @@ export default function Home() {
               >
                 <Github className="w-3.5 h-3.5" />
                 GitHub
-              </a>
-              <a
-                href="https://discord.gg/physiclaw"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-gold-light transition-colors flex items-center gap-1.5"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                Discord
               </a>
               <a
                 href="https://github.com/physiclaw/core/blob/main/LICENSE"

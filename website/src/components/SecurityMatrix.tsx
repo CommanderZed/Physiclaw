@@ -24,6 +24,8 @@ interface Layer {
   subtitle: string;
   icon: React.ElementType;
   color: string;
+  /** Higher-contrast color for labels on navy (SVG + tags) */
+  labelColor: string;
   bgClass: string;
   borderClass: string;
   textClass: string;
@@ -41,9 +43,10 @@ const layers: Layer[] = [
     subtitle: "Kernel-level sandboxing",
     icon: ShieldCheck,
     color: "#BF0603",
+    labelColor: "#d93835",
     bgClass: "bg-crimson/10",
     borderClass: "border-crimson/30",
-    textClass: "text-crimson",
+    textClass: "text-crimson-light",
     ringIndex: 0,
     primitives: [
       { id: "gvisor", label: "gVisor" },
@@ -61,9 +64,10 @@ const layers: Layer[] = [
     subtitle: "Transit & rest",
     icon: Lock,
     color: "#8D0801",
+    labelColor: "#d93835",
     bgClass: "bg-crimson-dark/10",
     borderClass: "border-crimson-dark/30",
-    textClass: "text-crimson-dark",
+    textClass: "text-crimson-light",
     ringIndex: 1,
     primitives: [
       { id: "mtls", label: "mTLS" },
@@ -81,9 +85,10 @@ const layers: Layer[] = [
     subtitle: "HSM & TPM-backed",
     icon: KeyRound,
     color: "#F4D58D",
-    bgClass: "bg-gold/10",
+    labelColor: "#b89a50",
+    bgClass: "bg-gold/20",
     borderClass: "border-gold/30",
-    textClass: "text-gold",
+    textClass: "text-gold-dark",
     ringIndex: 2,
     primitives: [
       { id: "hsm", label: "HSM" },
@@ -101,6 +106,7 @@ const layers: Layer[] = [
     subtitle: "Full trace & attestation",
     icon: Eye,
     color: "#8aa89b",
+    labelColor: "#8aa89b",
     bgClass: "bg-sage/10",
     borderClass: "border-sage/30",
     textClass: "text-sage-light",
@@ -121,6 +127,7 @@ const layers: Layer[] = [
     subtitle: "Offline-first, audit-ready",
     icon: Network,
     color: "#d4b46a",
+    labelColor: "#d4b46a",
     bgClass: "bg-gold-dark/10",
     borderClass: "border-gold-dark/30",
     textClass: "text-gold-dark",
@@ -325,31 +332,6 @@ export default function SecurityMatrix() {
             transition={{ duration: 0.5 }}
           />
 
-          {/* Lock icon — Unicode as text */}
-          <text
-            x={CENTER}
-            y={CENTER - 0.5}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize="4"
-            fill={activeLayerObj ? activeLayerObj.color : "#4a5f55"}
-            className="select-none"
-          >
-            &#x1F512;
-          </text>
-          <motion.text
-            x={CENTER}
-            y={CENTER + 5}
-            textAnchor="middle"
-            fontSize="1.8"
-            className="font-mono"
-            fill={activeLayerObj ? activeLayerObj.color : "#4a5f55"}
-            animate={{ opacity: activeLayer ? 0.9 : 0.4 }}
-            transition={{ duration: 0.4 }}
-          >
-            YOUR INFRA
-          </motion.text>
-
           {/* Primitives on rings */}
           {layers.map((layer) => {
             const isActive = activeLayer === layer.id;
@@ -406,8 +388,8 @@ export default function SecurityMatrix() {
                         x={pos.x}
                         y={pos.y + 4}
                         textAnchor="middle"
-                        className="font-mono"
-                        fill={layer.color}
+                        className="font-mono font-semibold"
+                        fill={layer.labelColor}
                         fontSize="2"
                         initial={{ opacity: 0, y: pos.y + 2 }}
                         animate={{ opacity: 1, y: pos.y + 4 }}
@@ -449,6 +431,26 @@ export default function SecurityMatrix() {
               );
             })}
         </svg>
+
+        {/* Center: Lock icon + YOUR INFRA (Lucide icon for consistent style, no overlap) */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="flex flex-col items-center gap-1.5">
+            <Lock
+              className="w-5 h-5 shrink-0"
+              style={{
+                color: activeLayerObj ? activeLayerObj.labelColor : "#4a5f55",
+              }}
+            />
+            <span
+              className="text-[10px] font-mono tracking-wider shrink-0"
+              style={{
+                color: activeLayerObj ? activeLayerObj.labelColor : "#4a5f55",
+              }}
+            >
+              YOUR INFRA
+            </span>
+          </div>
+        </div>
 
         {/* Hint */}
         {!activeLayer && (

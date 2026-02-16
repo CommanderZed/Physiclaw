@@ -54,3 +54,23 @@ body {
     linear-gradient(90deg, rgba(112, 141, 129, 0.04) 1px, transparent 1px);
   background-size: 60px 60px;
 }
+
+/* Subtle starfield / dot texture */
+.bg-starfield {
+  background-image: radial-gradient(
+      circle,
+      rgba(196, 200, 204, 0.12) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      circle at 30% 70%,
+      rgba(196, 200, 204, 0.08) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      circle at 70% 30%,
+      rgba(196, 200, 204, 0.06) 1px,
+      transparent 1px
+    );
+  background-size: 40px 40px, 56px 56px, 64px 64px;
+}

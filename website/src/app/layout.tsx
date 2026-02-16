@@ -14,9 +14,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Physiclaw \u2014 Open Source Enterprise AI Agents",
+  title: "Physiclaw — Functional AI Agents on Your Hardware",
   description:
-    "Deploy specialized AI agents on your own bare metal. Total data sovereignty. Zero external dependencies.",
+    "Open-source software that runs AI agents entirely on your own servers. No cloud, no telemetry, no lock-in. Deploy on bare metal, VMs, or Kubernetes and keep full control.",
 };
 
 export default function RootLayout({
