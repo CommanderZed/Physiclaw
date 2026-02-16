@@ -14,7 +14,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://physiclaw.dev"),
+  // Use canonical domain so og:image/twitter:image are absolute URLs crawlers can fetch (www.physiclaw.dev).
+  // Do not use VERCEL_URL here—it can be the *.vercel.app preview URL, which breaks link previews.
+  metadataBase: new URL("https://www.physiclaw.dev"),
   title: "Physiclaw — Functional AI Agents on Your Hardware",
   description:
     "Open-source software that runs AI agents entirely on your own servers. No cloud, no telemetry, no lock-in. Deploy on bare metal, VMs, or Kubernetes and keep full control.",
