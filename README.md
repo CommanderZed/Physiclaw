@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-F4D58D?style=flat-square&labelColor=001427" alt="License" /></a>&nbsp;
-  <img src="https://img.shields.io/badge/version-0.9--beta-BF0603?style=flat-square&labelColor=001427" alt="Version" />&nbsp;
+  <img src="https://img.shields.io/badge/version-0.9.0--beta-BF0603?style=flat-square&labelColor=001427" alt="Version" />&nbsp;
   <img src="https://img.shields.io/badge/status-active-708D81?style=flat-square&labelColor=001427" alt="Status" />&nbsp;
   <img src="https://img.shields.io/badge/air--gap-ready-8aa89b?style=flat-square&labelColor=001427" alt="Air-Gap Ready" />
 </p>

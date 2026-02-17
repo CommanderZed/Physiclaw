@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Github, Menu, X } from "lucide-react";
+import { Github, Menu, X, Star, GitFork } from "lucide-react";
 import PhysiclawLogo from "@/components/PhysiclawLogo";
 import XLogo from "@/components/XLogo";
 
@@ -11,8 +11,12 @@ interface SiteNavProps {
   showDocsLink?: boolean;
 }
 
+const GITHUB_REPO = "https://api.github.com/repos/CommanderZed/Physiclaw";
+
 export default function SiteNav({ logoHref = "/", showDocsLink = false }: SiteNavProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [stars, setStars] = useState<number>(10);
+  const [forks, setForks] = useState<number>(3);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,6 +27,26 @@ export default function SiteNav({ logoHref = "/", showDocsLink = false }: SiteNa
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const res = await fetch(GITHUB_REPO);
+        if (!res.ok) {
+          setStars(10);
+          setForks(3);
+          return;
+        }
+        const data = await res.json();
+        setStars(data.stargazers_count ?? 10);
+        setForks(data.forks_count ?? 3);
+      } catch {
+        setStars(10);
+        setForks(3);
+      }
+    }
+    fetchStats();
   }, []);
 
   const navLinks = (
@@ -91,6 +115,26 @@ export default function SiteNav({ logoHref = "/", showDocsLink = false }: SiteNa
             <PhysiclawLogo height={26} />
           </Link>
           <div className="flex justify-end items-center gap-2">
+            <div className="flex items-center gap-3 mr-1 text-xs font-mono text-sage-dim">
+                <a
+                  href="https://github.com/CommanderZed/Physiclaw"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 hover:text-gold-light transition-colors"
+                >
+                  <Star className="w-3.5 h-3.5 text-gold" />
+                  <span>{stars.toLocaleString()}</span>
+                </a>
+                <a
+                  href="https://github.com/CommanderZed/Physiclaw/fork"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 hover:text-gold-light transition-colors"
+                >
+                  <GitFork className="w-3.5 h-3.5 text-sage-light" />
+                  <span>{forks.toLocaleString()}</span>
+                </a>
+              </div>
             {navLinks}
           </div>
         </div>

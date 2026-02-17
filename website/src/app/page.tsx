@@ -98,6 +98,41 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ═══════════ COMMUNITY VOICES ═══════════ */}
+      <section className="relative z-10 py-20 px-6" id="community">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-10">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-navy-200/60" />
+              <span className="text-xs font-mono text-sage-dim uppercase tracking-widest">
+                Community voices
+              </span>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-navy-200/60" />
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gold-light mb-2">
+              Why Physiclaw
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              "Ok this is more what I was looking for. No cloudshits, no social media logins.",
+              "The data egress issue is exactly why more teams are going local-first.",
+              "The 'one generic assistant with root access to everything' problem is exactly what kills agent setups… Breaking it into role-specific agents with scoped tool access is the right call.",
+              "How dare you not want to give all your banking and API keys to a cloud company!",
+              "SQLite FTS5 + LanceDB is exactly the kind of 'no-cloud-dependency' stack that belongs in Physiclaw.",
+              "The air-gapped agent runtime space is weirdly underserved for how many people need it.",
+            ].map((quote, i) => (
+              <blockquote
+                key={i}
+                className="rounded-xl border border-navy-200/50 bg-navy-300/30 px-4 py-3 text-sm text-sage leading-relaxed"
+              >
+                &ldquo;{quote}&rdquo;
+              </blockquote>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ═══════════ AGENT ROLES ═══════════ */}
       <section className="relative z-10 py-24 px-6" id="agents">
         <div className="max-w-7xl mx-auto">

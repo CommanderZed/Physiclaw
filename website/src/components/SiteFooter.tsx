@@ -13,42 +13,24 @@ export default function SiteFooter() {
           <Link href="/" className="hover:opacity-90 transition-opacity">
             <PhysiclawLogo height={20} />
           </Link>
-          <div className="flex items-center gap-6 text-sm text-sage-dim">
-            <Link href="/demo" className="hover:text-gold-light transition-colors">
-              Demo
-            </Link>
-            <Link href="/docs" className="hover:text-gold-light transition-colors">
-              Docs
-            </Link>
-            <Link href="/whitepaper" className="hover:text-gold-light transition-colors">
-              Whitepaper
-            </Link>
+          <div className="flex items-center gap-4 text-sage-dim">
             <a
               href="https://github.com/CommanderZed/Physiclaw"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-gold-light transition-colors flex items-center gap-1.5"
+              className="hover:text-gold-light transition-colors p-1"
+              aria-label="GitHub"
             >
-              <Github className="w-3.5 h-3.5" />
-              GitHub
+              <Github className="w-5 h-5" />
             </a>
             <a
               href="https://x.com/physiclaw"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-gold-light transition-colors flex items-center gap-1.5"
+              className="hover:text-gold-light transition-colors p-1"
               aria-label="X"
             >
-              <XLogo size={14} className="w-3.5 h-3.5" />
-              X
-            </a>
-            <a
-              href="https://www.apache.org/licenses/LICENSE-2.0.txt"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-gold-light transition-colors"
-            >
-              Apache 2.0
+              <XLogo size={20} className="w-5 h-5" />
             </a>
           </div>
           <p className="text-xs text-sage-dim font-mono">
