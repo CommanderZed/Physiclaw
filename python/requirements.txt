@@ -1,0 +1,8 @@
+# Physiclaw Python backend — local-first only. No cloud SDKs.
+# See scripts/audit_telemetry.py for telemetry/egress audit.
+
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+pydantic>=2.0.0
+lancedb==0.7.1
+numpy>=1.26.0,<3.0.0

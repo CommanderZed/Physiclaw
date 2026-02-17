@@ -2,27 +2,15 @@
 
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import PhysiclawLogo from "@/components/PhysiclawLogo";
+import SiteNav from "@/components/SiteNav";
+import SiteFooter from "@/components/SiteFooter";
 
 export default function WhitepaperPage() {
   return (
     <div className="min-h-screen bg-navy bg-grid relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-gold/[0.03] rounded-full blur-[120px] pointer-events-none" />
 
-      <nav className="relative z-20 border-b border-navy-200/60">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="hover:opacity-90 transition-opacity">
-            <PhysiclawLogo height={26} />
-          </Link>
-          <Link
-            href="/"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-sage-light bg-navy-300/60 border border-navy-200/60 hover:border-sage/15 hover:text-gold-light transition-all"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Link>
-        </div>
-      </nav>
+      <SiteNav logoHref="/" showDocsLink />
 
       <article className="relative z-10 max-w-3xl mx-auto px-6 py-16">
         <header className="mb-14">
@@ -151,6 +139,8 @@ export default function WhitepaperPage() {
           </Link>
         </footer>
       </article>
+
+      <SiteFooter />
     </div>
   );
 }

@@ -1,17 +1,28 @@
+# Physiclaw — Node frontend + Python backend. Local weights via /models volume.
+# Usage: docker compose up -d
+# Then: open http://localhost:3000 (web), gateway on 8090, bridge on 8000.
+
+volumes:
+  physiclaw_models:
+  physiclaw_data:
+  physiclaw_config:
+
 services:
+  # Node.js gateway (existing core)
   physiclaw-core:
     image: ${PHYSICLAW_IMAGE:-ghcr.io/physiclaw/core:latest}
     environment:
       HOME: /home/node
       TERM: xterm-256color
-      PHYSICLAW_GATEWAY_TOKEN: ${PHYSICLAW_GATEWAY_TOKEN}
+      PHYSICLAW_GATEWAY_TOKEN: ${PHYSICLAW_GATEWAY_TOKEN:-}
       PHYSICLAW_TELEMETRY: "off"
       PHYSICLAW_PHONE_HOME: "disabled"
       PL_LICENSE: ${PL_LICENSE:-oss}
       PL_CLUSTER_NAME: ${PL_CLUSTER_NAME:-my-agents}
     volumes:
-      - ${PHYSICLAW_CONFIG_DIR:-./config}:/home/node/.physiclaw
-      - ${PHYSICLAW_DATA_DIR:-./data}:/home/node/.physiclaw/workspace
+      - physiclaw_config:/home/node/.physiclaw
+      - physiclaw_data:/home/node/.physiclaw/workspace
+      - physiclaw_models:/models
     ports:
       - "${PHYSICLAW_GATEWAY_PORT:-8090}:8090"
     init: true
@@ -27,16 +38,52 @@ services:
         "8090",
       ]
 
+  # Python bridge (goal-only RPC; persona-based tool authority)
+  physiclaw-bridge:
+    build:
+      context: .
+      dockerfile: python/Dockerfile
+    environment:
+      PHYSICLAW_PERSONA: ${PHYSICLAW_PERSONA:-sre}
+      PHYSICLAW_BRIDGE_PORT: "8000"
+      PHYSICLAW_MEMORY_DIR: /app/data/memory
+    volumes:
+      - physiclaw_data:/app/data
+      - physiclaw_models:/models
+    ports:
+      - "${PHYSICLAW_BRIDGE_PORT:-8000}:8000"
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Node.js frontend (marketing + demo UI)
+  physiclaw-web:
+    build:
+      context: ./website
+      dockerfile: Dockerfile
+    ports:
+      - "${PHYSICLAW_WEB_PORT:-3000}:3000"
+    init: true
+    restart: unless-stopped
+    depends_on:
+      - physiclaw-core
+
+  # CLI (interactive)
   physiclaw-cli:
     image: ${PHYSICLAW_IMAGE:-ghcr.io/physiclaw/core:latest}
     environment:
       HOME: /home/node
       TERM: xterm-256color
-      PHYSICLAW_GATEWAY_TOKEN: ${PHYSICLAW_GATEWAY_TOKEN}
+      PHYSICLAW_GATEWAY_TOKEN: ${PHYSICLAW_GATEWAY_TOKEN:-}
       PL_LICENSE: ${PL_LICENSE:-oss}
     volumes:
-      - ${PHYSICLAW_CONFIG_DIR:-./config}:/home/node/.physiclaw
-      - ${PHYSICLAW_DATA_DIR:-./data}:/home/node/.physiclaw/workspace
+      - physiclaw_config:/home/node/.physiclaw
+      - physiclaw_data:/home/node/.physiclaw/workspace
+      - physiclaw_models:/models
     stdin_open: true
     tty: true
     init: true

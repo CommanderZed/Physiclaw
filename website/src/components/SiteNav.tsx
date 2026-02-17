@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Github, Menu, X, Twitter } from "lucide-react";
+import { Github, Menu, X } from "lucide-react";
 import PhysiclawLogo from "@/components/PhysiclawLogo";
+import XLogo from "@/components/XLogo";
 
 interface SiteNavProps {
   logoHref?: string;
@@ -54,9 +55,9 @@ export default function SiteNav({ logoHref = "/", showDocsLink = false }: SiteNa
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center justify-center p-2 rounded-lg text-sage-light bg-navy-300/60 border border-navy-200/60 hover:border-sage/15 hover:text-gold-light transition-all"
-        aria-label="X (Twitter)"
+        aria-label="X"
       >
-        <Twitter className="w-4 h-4" />
+        <XLogo size={16} className="w-4 h-4" />
       </a>
       <a
         href="https://github.com/CommanderZed/Physiclaw"
@@ -141,7 +142,7 @@ export default function SiteNav({ logoHref = "/", showDocsLink = false }: SiteNa
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-sage-light hover:bg-navy-300/60 transition-colors"
             >
-              <Twitter className="w-4 h-4" />
+              <XLogo size={16} className="w-4 h-4" />
               X
             </a>
             <a

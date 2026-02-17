@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Github, Twitter } from "lucide-react";
+import { Github } from "lucide-react";
 import PhysiclawLogo from "@/components/PhysiclawLogo";
+import XLogo from "@/components/XLogo";
 
 export default function SiteFooter() {
   return (
@@ -36,9 +37,9 @@ export default function SiteFooter() {
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-gold-light transition-colors flex items-center gap-1.5"
-              aria-label="X (Twitter)"
+              aria-label="X"
             >
-              <Twitter className="w-3.5 h-3.5" />
+              <XLogo size={14} className="w-3.5 h-3.5" />
               X
             </a>
             <a
