@@ -8,6 +8,8 @@ on the active persona. All tool resolution and execution decisions happen here.
 
 from __future__ import annotations
 
+__version__ = "0.1.1-alpha"
+
 import os
 from contextlib import asynccontextmanager
 from typing import Any
@@ -77,6 +79,8 @@ def resolve_goal_to_tools(goal: str, persona: str) -> list[str]:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    import logging
+    logging.getLogger(__name__).info("Physiclaw Bridge v%s starting", __version__)
     get_memory()
     yield
     # optional: close L2/L3 connections
@@ -89,7 +93,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Physiclaw Bridge",
     description="Goal-only RPC. Node cannot request tools; Python enforces persona whitelist.",
-    version="0.1.1-alpha",
+    version=__version__,
     lifespan=lifespan,
 )
 
@@ -120,7 +124,7 @@ async def submit_goal(req: GoalRequest) -> GoalResponse:
 
 @app.get("/health")
 async def health() -> dict[str, str]:
-    return {"status": "ok", "service": "physiclaw-bridge"}
+    return {"status": "ok", "service": "physiclaw-bridge", "version": __version__}
 
 
 @app.get("/memory/status")
@@ -148,6 +152,9 @@ async def memory_status() -> dict[str, Any]:
 # --- Run ---------------------------------------------------------------------
 
 if __name__ == "__main__":
+    import logging
     import uvicorn
     port = int(os.getenv("PHYSICLAW_BRIDGE_PORT", "8000"))
+    logging.basicConfig(level=logging.INFO)
+    logging.info("Physiclaw Bridge v%s starting on 0.0.0.0:%s", __version__, port)
     uvicorn.run(app, host="0.0.0.0", port=port)

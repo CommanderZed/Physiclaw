@@ -6,6 +6,8 @@ enforces the whitelist and prepares for isolation (bubblewrap / docker-in-docker
 
 from __future__ import annotations
 
+__version__ = "0.1.1-alpha"
+
 import os
 from enum import Enum
 from typing import Any

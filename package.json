@@ -1,6 +1,6 @@
 {
   "name": "physiclaw",
-  "version": "0.9.0-beta",
+  "version": "0.1.1-alpha",
   "description": "Specialized AI agents for your bare metal. 100% On-Prem & Air-Gap ready.",
   "keywords": ["ai-agents", "on-prem", "air-gap", "self-hosted", "bare-metal", "sre", "secops"],
   "license": "Apache-2.0",
