@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Github,
@@ -7,6 +8,8 @@ import {
   Server,
   Plug,
   MessageSquare,
+  Star,
+  GitFork,
 } from "lucide-react";
 import QuickStartTerminal from "@/components/QuickStartTerminal";
 import AgentSkillMatrix from "@/components/AgentSkillMatrix";
@@ -16,9 +19,29 @@ import IntegrationGrid from "@/components/IntegrationGrid";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
 
+const GITHUB_REPO = "https://api.github.com/repos/CommanderZed/Physiclaw";
+
 // ─── Page ──────────────────────────────────────────────────────────
 
 export default function Home() {
+  const [stars, setStars] = useState(10);
+  const [forks, setForks] = useState(3);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const res = await fetch(GITHUB_REPO);
+        if (!res.ok) return;
+        const data = await res.json();
+        setStars(data.stargazers_count ?? 10);
+        setForks(data.forks_count ?? 3);
+      } catch {
+        // keep fallback
+      }
+    }
+    fetchStats();
+  }, []);
+
   return (
     <div className="min-h-screen bg-navy bg-grid relative overflow-hidden">
       {/* Ambient top glow */}
@@ -112,6 +135,26 @@ export default function Home() {
             <h2 className="text-2xl sm:text-3xl font-bold text-center text-gold-light mb-2">
               Why Physiclaw
             </h2>
+            <div className="flex justify-center gap-6 mt-4">
+              <a
+                href="https://github.com/CommanderZed/Physiclaw"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-mono text-sage-dim hover:text-gold-light transition-colors"
+              >
+                <Star className="w-4 h-4 text-gold" />
+                <span>{stars.toLocaleString()} stars</span>
+              </a>
+              <a
+                href="https://github.com/CommanderZed/Physiclaw/fork"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-mono text-sage-dim hover:text-gold-light transition-colors"
+              >
+                <GitFork className="w-4 h-4 text-sage-light" />
+                <span>{forks.toLocaleString()} forks</span>
+              </a>
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[

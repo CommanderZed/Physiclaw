@@ -2,21 +2,16 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Github, Menu, X, Star, GitFork } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import PhysiclawLogo from "@/components/PhysiclawLogo";
-import XLogo from "@/components/XLogo";
 
 interface SiteNavProps {
   logoHref?: string;
   showDocsLink?: boolean;
 }
 
-const GITHUB_REPO = "https://api.github.com/repos/CommanderZed/Physiclaw";
-
 export default function SiteNav({ logoHref = "/", showDocsLink = false }: SiteNavProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [stars, setStars] = useState<number>(10);
-  const [forks, setForks] = useState<number>(3);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,26 +22,6 @@ export default function SiteNav({ logoHref = "/", showDocsLink = false }: SiteNa
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    async function fetchStats() {
-      try {
-        const res = await fetch(GITHUB_REPO);
-        if (!res.ok) {
-          setStars(10);
-          setForks(3);
-          return;
-        }
-        const data = await res.json();
-        setStars(data.stargazers_count ?? 10);
-        setForks(data.forks_count ?? 3);
-      } catch {
-        setStars(10);
-        setForks(3);
-      }
-    }
-    fetchStats();
   }, []);
 
   const navLinks = (
@@ -74,24 +49,6 @@ export default function SiteNav({ logoHref = "/", showDocsLink = false }: SiteNa
       >
         Whitepaper
       </Link>
-      <a
-        href="https://x.com/physiclaw"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center justify-center p-2 rounded-lg text-sage-light bg-navy-300/60 border border-navy-200/60 hover:border-sage/15 hover:text-gold-light transition-all"
-        aria-label="X"
-      >
-        <XLogo size={16} className="w-4 h-4" />
-      </a>
-      <a
-        href="https://github.com/CommanderZed/Physiclaw"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center justify-center p-2 rounded-lg text-sage-light bg-navy-300/60 border border-navy-200/60 hover:border-sage/15 hover:text-gold-light transition-all"
-        aria-label="GitHub"
-      >
-        <Github className="w-4 h-4" />
-      </a>
     </>
   );
 
@@ -115,26 +72,6 @@ export default function SiteNav({ logoHref = "/", showDocsLink = false }: SiteNa
             <PhysiclawLogo height={26} />
           </Link>
           <div className="flex justify-end items-center gap-2">
-            <div className="flex items-center gap-3 mr-1 text-xs font-mono text-sage-dim">
-                <a
-                  href="https://github.com/CommanderZed/Physiclaw"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 hover:text-gold-light transition-colors"
-                >
-                  <Star className="w-3.5 h-3.5 text-gold" />
-                  <span>{stars.toLocaleString()}</span>
-                </a>
-                <a
-                  href="https://github.com/CommanderZed/Physiclaw/fork"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 hover:text-gold-light transition-colors"
-                >
-                  <GitFork className="w-3.5 h-3.5 text-sage-light" />
-                  <span>{forks.toLocaleString()}</span>
-                </a>
-              </div>
             {navLinks}
           </div>
         </div>
@@ -180,24 +117,6 @@ export default function SiteNav({ logoHref = "/", showDocsLink = false }: SiteNa
             >
               Whitepaper
             </Link>
-            <a
-              href="https://x.com/physiclaw"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-sage-light hover:bg-navy-300/60 transition-colors"
-            >
-              <XLogo size={16} className="w-4 h-4" />
-              X
-            </a>
-            <a
-              href="https://github.com/CommanderZed/Physiclaw"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-sage-light hover:bg-navy-300/60 transition-colors"
-            >
-              <Github className="w-4 h-4" />
-              GitHub
-            </a>
           </div>
         </div>
       )}

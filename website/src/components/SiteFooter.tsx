@@ -13,7 +13,16 @@ export default function SiteFooter() {
           <Link href="/" className="hover:opacity-90 transition-opacity">
             <PhysiclawLogo height={20} />
           </Link>
-          <div className="flex items-center gap-4 text-sage-dim">
+          <div className="flex flex-wrap items-center gap-4 text-sage-dim">
+            <Link href="/demo" className="text-sm hover:text-gold-light transition-colors">
+              Demo
+            </Link>
+            <Link href="/docs" className="text-sm hover:text-gold-light transition-colors">
+              Docs
+            </Link>
+            <Link href="/whitepaper" className="text-sm hover:text-gold-light transition-colors">
+              Whitepaper
+            </Link>
             <a
               href="https://github.com/CommanderZed/Physiclaw"
               target="_blank"

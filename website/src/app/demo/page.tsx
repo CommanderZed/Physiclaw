@@ -11,6 +11,9 @@ import {
   HardDrive,
   WifiOff,
   User,
+  Server,
+  Lock,
+  Zap,
 } from "lucide-react";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
@@ -33,20 +36,35 @@ const PERSONA_CONFIG: Record<
   },
 };
 
+const MODELS = [
+  { id: "70b", label: "Llama-3-70B", vramMax: 48 },
+  { id: "8b", label: "Llama-3-8B", vramMax: 8 },
+];
+
 const REASONING_LINES = [
   "Analyzing request via vLLM...",
   "Querying local K8s API...",
   "Security Ring check...",
 ];
 
-function isViolation(persona: Persona, input: string): boolean {
+function isViolation(persona: Persona, input: string, strictMode: boolean): boolean {
   const lower = input.toLowerCase();
-  if (persona === "sre") return /\b(delete|drop)\b/.test(lower) || lower.includes("kubectl-delete");
-  return /\b(export|drop)\b/.test(lower) || lower.includes("data-export");
+  if (persona === "sre") {
+    const base = /\b(delete|drop)\b/.test(lower) || lower.includes("kubectl-delete");
+    if (strictMode) return base || /\b(scale|restart|apply)\b/.test(lower);
+    return base;
+  }
+  const base = /\b(export|drop)\b/.test(lower) || lower.includes("data-export");
+  if (strictMode) return base || /\b(ssh|scp|curl.*http)/.test(lower);
+  return base;
 }
 
 export default function DemoPage() {
   const [persona, setPersona] = useState<Persona>("sre");
+  const [vramUsed, setVramUsed] = useState(42);
+  const [vramMax, setVramMax] = useState(48);
+  const [modelId, setModelId] = useState<"70b" | "8b">("70b");
+  const [strictMode, setStrictMode] = useState(false);
   const [logLines, setLogLines] = useState<{ text: string; violation?: boolean }[]>([
     { text: "Physiclaw demo — Zero-Egress Policy active. Gateway: localhost:8000" },
     { text: "Select a persona and type a command to simulate agent behavior." },
@@ -68,7 +86,7 @@ export default function DemoPage() {
     setInput("");
     setIsThinking(true);
 
-    const violation = isViolation(persona, raw);
+    const violation = isViolation(persona, raw, strictMode);
 
     if (violation) {
       setLogLines((prev) => [
@@ -105,6 +123,15 @@ export default function DemoPage() {
     setTimeout(addReasoning, 400);
   };
 
+  const handleModelChange = (id: "70b" | "8b") => {
+    setModelId(id);
+    const m = MODELS.find((x) => x.id === id);
+    if (m) {
+      setVramMax(m.vramMax);
+      setVramUsed(Math.min(vramUsed, m.vramMax));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-navy bg-grid relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-gold/[0.03] rounded-full blur-[120px] pointer-events-none" />
@@ -112,34 +139,101 @@ export default function DemoPage() {
       <SiteNav logoHref="/" showDocsLink />
 
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {/* Data flow diagram */}
+        <div className="mb-8 rounded-xl border border-navy-200/50 bg-navy-300/40 backdrop-blur-sm overflow-hidden">
+          <div className="px-4 py-2 border-b border-navy-200/60 flex items-center gap-2">
+            <Zap className="w-4 h-4 text-gold" />
+            <span className="text-xs font-medium text-sage-light uppercase tracking-widest">
+              Zero-Egress data flow
+            </span>
+          </div>
+          <div className="p-6 flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+            <div className="flex flex-col items-center gap-1">
+              <div className="w-14 h-14 rounded-xl bg-navy-200/60 border border-navy-200/50 flex items-center justify-center">
+                <Terminal className="w-7 h-7 text-gold" />
+              </div>
+              <span className="text-xs font-mono text-sage-dim">You</span>
+            </div>
+            <span className="text-sage-dim">→</span>
+            <div className="flex flex-col items-center gap-1">
+              <div className="w-14 h-14 rounded-xl bg-gold/10 border border-gold/40 flex items-center justify-center">
+                <User className="w-7 h-7 text-gold" />
+              </div>
+              <span className="text-xs font-mono text-sage-dim">Agent</span>
+            </div>
+            <span className="text-sage-dim">→</span>
+            <div className="flex flex-col items-center gap-1">
+              <div className="w-14 h-14 rounded-xl bg-sage/10 border border-sage/40 flex items-center justify-center">
+                <Server className="w-7 h-7 text-sage" />
+              </div>
+              <span className="text-xs font-mono text-sage-dim">Gateway</span>
+            </div>
+            <span className="text-sage-dim">→</span>
+            <div className="flex flex-col items-center gap-1">
+              <div className="w-14 h-14 rounded-xl bg-navy-200/60 border border-navy-200/50 flex items-center justify-center">
+                <Lock className="w-7 h-7 text-gold" />
+              </div>
+              <span className="text-xs font-mono text-sage-dim">Your tools</span>
+            </div>
+            <div className="w-full sm:w-auto flex items-center justify-center gap-2 mt-2 sm:mt-0 sm:ml-2 px-3 py-1.5 rounded-lg bg-crimson/10 border border-crimson/30">
+              <Shield className="w-4 h-4 text-crimson-light" />
+              <span className="text-xs font-mono text-crimson-light">All inside your perimeter</span>
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          {/* Local Telemetry Sidebar */}
-          <aside className="w-full lg:w-72 shrink-0 space-y-4">
+          {/* Local Telemetry + controls Sidebar */}
+          <aside className="w-full lg:w-80 shrink-0 space-y-4">
             <div className="rounded-xl border border-navy-200/50 bg-navy-300/80 backdrop-blur-sm overflow-hidden">
               <div className="px-4 py-3 border-b border-navy-200/60 flex items-center gap-2">
                 <Activity className="w-4 h-4 text-gold" />
                 <span className="text-xs font-medium text-sage-light uppercase tracking-widest">
-                  Local telemetry
+                  Local telemetry &amp; controls
                 </span>
               </div>
               <div className="p-4 space-y-4">
                 <div>
-                  <div className="flex items-center justify-between text-xs mb-1">
+                  <label className="flex items-center justify-between text-xs mb-1">
                     <span className="text-sage-dim flex items-center gap-1.5">
                       <Cpu className="w-3.5 h-3.5" />
-                      VRAM
+                      VRAM (GB)
                     </span>
-                    <span className="text-gold-light font-mono">42 GB / 48 GB</span>
-                  </div>
-                  <div className="h-2 bg-navy-200/60 rounded-full overflow-hidden">
+                    <span className="text-gold-light font-mono">{vramUsed} / {vramMax}</span>
+                  </label>
+                  <input
+                    type="range"
+                    min={0}
+                    max={vramMax}
+                    value={vramUsed}
+                    onChange={(e) => setVramUsed(Number(e.target.value))}
+                    className="w-full h-2 bg-navy-200/60 rounded-full appearance-none accent-gold"
+                  />
+                  <div className="h-1.5 mt-1 bg-navy-200/60 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gold/80 rounded-full transition-all"
-                      style={{ width: "87.5%" }}
+                      className="h-full bg-gold/80 rounded-full transition-all duration-200"
+                      style={{ width: `${(vramUsed / vramMax) * 100}%` }}
                     />
                   </div>
-                  <p className="text-[10px] text-sage-dim mt-1 font-mono">
-                    Llama-3-70B local
-                  </p>
+                </div>
+                <div>
+                  <label className="text-xs text-sage-dim block mb-2">Model</label>
+                  <div className="flex rounded-lg border border-navy-200/60 bg-navy-300/60 p-0.5">
+                    {(MODELS as { id: "70b" | "8b" }[]).map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => handleModelChange(m.id)}
+                        className={`flex-1 px-3 py-1.5 rounded-md text-xs font-mono transition-all ${
+                          modelId === m.id
+                            ? "bg-navy-200/80 text-gold-light border border-navy-200/60"
+                            : "text-sage-dim hover:text-sage-light"
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <div className="flex items-center justify-between text-xs mb-1">
@@ -152,6 +246,24 @@ export default function DemoPage() {
                   <div className="h-2 bg-navy-200/60 rounded-full overflow-hidden">
                     <div className="h-full w-0 bg-crimson/80 rounded-full" />
                   </div>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-navy-200/50">
+                  <span className="text-xs text-sage-dim">Strict mode</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={strictMode}
+                    onClick={() => setStrictMode((s) => !s)}
+                    className={`relative w-10 h-5 rounded-full transition-colors ${
+                      strictMode ? "bg-crimson/60" : "bg-navy-200/60"
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 w-4 h-4 rounded-full bg-sage-light transition-transform ${
+                        strictMode ? "left-5" : "left-0.5"
+                      }`}
+                    />
+                  </button>
                 </div>
                 <div className="pt-2 border-t border-navy-200/50 flex items-center gap-2 text-xs text-sage-dim">
                   <WifiOff className="w-3.5 h-3.5 text-gold" />
@@ -256,7 +368,7 @@ export default function DemoPage() {
             </div>
 
             <p className="mt-3 text-xs text-sage-dim">
-              Try typing &quot;delete&quot;, &quot;drop&quot;, or &quot;export&quot; to see the Zero-Egress policy block the action.
+              Try &quot;delete&quot;, &quot;drop&quot;, or &quot;export&quot; to see blocks. With Strict mode on, &quot;scale&quot;, &quot;restart&quot;, or &quot;apply&quot; (SRE) and &quot;ssh&quot;/&quot;scp&quot; (SecOps) are also blocked.
             </p>
           </div>
         </div>
