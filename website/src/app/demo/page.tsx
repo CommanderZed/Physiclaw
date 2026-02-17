@@ -36,7 +36,7 @@ const PERSONA_CONFIG: Record<
   },
 };
 
-const MODELS = [
+const MODELS: { id: "70b" | "8b"; label: string; vramMax: number }[] = [
   { id: "70b", label: "Llama-3-70B", vramMax: 48 },
   { id: "8b", label: "Llama-3-8B", vramMax: 8 },
 ];
@@ -219,7 +219,7 @@ export default function DemoPage() {
                 <div>
                   <label className="text-xs text-sage-dim block mb-2">Model</label>
                   <div className="flex rounded-lg border border-navy-200/60 bg-navy-300/60 p-0.5">
-                    {(MODELS as { id: "70b" | "8b" }[]).map((m) => (
+                    {MODELS.map((m) => (
                       <button
                         key={m.id}
                         type="button"
