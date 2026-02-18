@@ -81,6 +81,11 @@ def resolve_goal_to_tools(goal: str, persona: str) -> list[str]:
 async def lifespan(app: FastAPI):
     import logging
     logging.getLogger(__name__).info("Physiclaw Bridge v%s starting", __version__)
+    try:
+        from security.watchdog import start_egress_watchdog
+        start_egress_watchdog(interval_sec=5.0)
+    except Exception as e:
+        logging.getLogger(__name__).warning("Egress watchdog not started: %s", e)
     get_memory()
     yield
     # optional: close L2/L3 connections

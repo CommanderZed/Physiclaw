@@ -1,7 +1,7 @@
 """
 Physiclaw CLI — Tool execution with persona-based whitelisting and security guardrails.
 The bridge (bridge.py) is the sole authority on which tools are allowed; this executor
-enforces the whitelist and prepares for isolation (bubblewrap / docker-in-docker).
+enforces the whitelist and runs tools in a restricted subprocess (blast-radius isolation).
 """
 
 from __future__ import annotations
@@ -9,8 +9,19 @@ from __future__ import annotations
 __version__ = "0.1.1-alpha"
 
 import os
+import shlex
+import subprocess
 from enum import Enum
 from typing import Any
+
+# ENV keys we never pass to the tool subprocess (secrets, cloud creds, etc.)
+_STRIPPED_ENV_PREFIXES = (
+    "AWS_", "AZURE_", "GCP_", "GOOGLE_", "OPENAI_", "ANTHROPIC_", "API_KEY", "SECRET",
+    "KUBECONFIG", "KUBE_", "VAULT_", "TOKEN", "PASSWORD", "CREDENTIAL", "PRIVATE_KEY",
+    "SLACK_", "DISCORD_", "TELEGRAM_", "POSTHOG", "SENTRY_", "STRIPE_",
+)
+# Minimal safe env for the restricted subprocess.
+_SAFE_ENV_KEYS = frozenset({"PATH", "HOME", "USER", "LANG", "LC_ALL", "TERM", "PHYSICLAW_PERSONA"})
 
 # Persona tool whitelists. Only these tools may run for the given persona.
 SRE_WHITELIST = frozenset({
@@ -70,26 +81,76 @@ class ToolExecutor:
     def execute(self, tool: str, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """
         Run the tool only if it is whitelisted for the current persona.
+        Executes in a restricted subprocess with a clean environment (no sensitive ENV).
         Returns a result dict or raises SecurityViolation.
         """
         if not self.allowed(tool):
             raise SecurityViolation(tool, self.persona.value)
-
-        # TODO: Execution boundary / isolation
-        # - Option A: Run in bubblewrap (bwrap) with minimal namespace/mounts.
-        # - Option B: Run in a dedicated Docker container (docker-in-docker or sidecar)
-        #   so that even a compromised tool cannot escape the runner.
-        # Placeholder: direct execution. Replace with isolated runner once integrated.
         return self._run_isolated(tool, *args, **kwargs)
 
+    def _clean_env(self) -> dict[str, str]:
+        """Build minimal env for subprocess: only safe keys, no secrets."""
+        out: dict[str, str] = {}
+        for key in _SAFE_ENV_KEYS:
+            val = os.environ.get(key)
+            if val is not None:
+                out[key] = val
+        # Strip any key that looks like secrets
+        for k, v in os.environ.items():
+            if k in out:
+                continue
+            up = k.upper()
+            if any(up.startswith(p) for p in _STRIPPED_ENV_PREFIXES):
+                continue
+            if "KEY" in up or "SECRET" in up or "TOKEN" in up or "PASSWORD" in up:
+                continue
+            out[k] = v
+        out["PHYSICLAW_PERSONA"] = self.persona.value
+        return out
+
+    def _tool_to_argv(self, tool: str, *args: Any) -> list[str]:
+        """Map whitelisted tool name to command argv. Prefer explicit binary + args."""
+        n = _norm(tool)
+        # Map known tools to [binary, ...args]
+        if "kubectl" in n and "get" in n:
+            return ["kubectl", "get"] + [str(a) for a in args]
+        if "terraform" in n and "plan" in n:
+            return ["terraform", "plan"] + [str(a) for a in args]
+        if "nmap" in n:
+            return ["nmap"] + [str(a) for a in args]
+        if "bandit" in n:
+            return ["bandit"] + [str(a) for a in args]
+        # Fallback: treat tool as a single command, args appended
+        return shlex.split(tool) + [str(a) for a in args]
+
     def _run_isolated(self, tool: str, *args: Any, **kwargs: Any) -> dict[str, Any]:
-        # TODO(blast-radius): Integrate bubblewrap or docker-in-docker here.
-        # Example: subprocess.run(["bwrap", "--ro-bind", "/usr", "/usr", "--", tool, *args])
-        # Or: docker run --rm -v workspace:/workspace runner-image tool args
-        raise NotImplementedError(
-            "Isolated execution not yet implemented. "
-            "TODO: add bubblewrap or docker-in-docker runner for execution boundary."
-        )
+        """Run whitelisted tool in a restricted subprocess: clean env, timeout, no inherited secrets."""
+        argv = self._tool_to_argv(tool, *args)
+        if not argv:
+            return {"ok": False, "error": "empty command", "stdout": "", "stderr": ""}
+        env = self._clean_env()
+        timeout_sec = kwargs.get("timeout") if isinstance(kwargs.get("timeout"), (int, float)) else 300
+        try:
+            result = subprocess.run(
+                argv,
+                env=env,
+                capture_output=True,
+                text=True,
+                timeout=timeout_sec,
+                cwd=os.environ.get("PHYSICLAW_CWD") or os.getcwd(),
+            )
+            return {
+                "ok": result.returncode == 0,
+                "returncode": result.returncode,
+                "stdout": result.stdout or "",
+                "stderr": result.stderr or "",
+            }
+        except FileNotFoundError as e:
+            return {"ok": False, "error": f"binary not found: {argv[0]}", "stdout": "", "stderr": str(e)}
+        except subprocess.TimeoutExpired:
+            return {"ok": False, "error": "command timed out", "stdout": "", "stderr": ""}
+        except Exception as e:
+            return {"ok": False, "error": str(e), "stdout": "", "stderr": ""}
 
 
 def get_executor(persona: str | None = None) -> ToolExecutor:

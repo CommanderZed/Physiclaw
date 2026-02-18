@@ -177,6 +177,16 @@ const routeModelsList: RouteSpec = {
   },
 };
 
+const routeWipe: RouteSpec = {
+  match: (path) => path[0] === "wipe",
+  run: async (argv) => {
+    const all = hasFlag(argv, "--all");
+    const { wipeCommand } = await import("../../commands/wipe.js");
+    await wipeCommand({ all, yes: hasFlag(argv, "--yes") });
+    return true;
+  },
+};
+
 const routeModelsStatus: RouteSpec = {
   match: (path) => path[0] === "models" && path[1] === "status",
   run: async (argv) => {
@@ -240,6 +250,7 @@ const routes: RouteSpec[] = [
   routeSessions,
   routeAgentsList,
   routeMemoryStatus,
+  routeWipe,
   routeConfigGet,
   routeConfigUnset,
   routeModelsList,

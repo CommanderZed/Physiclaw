@@ -6,3 +6,6 @@ uvicorn[standard]==0.32.1
 pydantic>=2.0.0
 lancedb==0.7.1
 numpy>=1.26.0,<3.0.0
+psutil>=6.0.0
+# Optional: local reranker for RAG (pip install flag-transformers or sentence-transformers)
+# flag-transformers>=0.0.0  # BAAI/bge-reranker-base
