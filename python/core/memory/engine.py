@@ -8,6 +8,7 @@ Proves the agent can "remember" infrastructure details without calling a cloud v
 from __future__ import annotations
 
 import logging
+import time
 from pathlib import Path
 from typing import Any
 
@@ -154,8 +155,19 @@ class MemoryEngine:
         """
         Combined retrieval: L2 keyword + L3 semantic, then optional local rerank.
         Returns list of items with 'text', 'source', 'score', 'tier' (l2|l3).
+        Records latency to audit for Prometheus (memory_retrieval_seconds).
         """
+        def _record(layer: str, sec: float) -> None:
+            try:
+                from core.audit import record_memory_retrieval_seconds
+                record_memory_retrieval_seconds(layer, sec)
+            except ImportError:
+                pass
+
+        t0 = time.perf_counter()
         results: list[dict[str, Any]] = []
+
+        t_l2 = time.perf_counter()
         for row in self.search_infrastructure(query, limit=l2_limit):
             results.append({
                 "text": row.get("body", ""),
@@ -164,6 +176,9 @@ class MemoryEngine:
                 "tier": "l2",
                 "id": row.get("id"),
             })
+        _record("l2", time.perf_counter() - t_l2)
+
+        t_l3 = time.perf_counter()
         for row in self.search_semantic(query, limit=l3_limit):
             results.append({
                 "text": row.get("text", ""),
@@ -172,7 +187,10 @@ class MemoryEngine:
                 "tier": "l3",
                 "id": row.get("id"),
             })
+        _record("l3", time.perf_counter() - t_l3)
+
         if not results:
+            _record("combined", time.perf_counter() - t0)
             return []
         if rerank_top > 0 and results:
             docs = [r["text"] for r in results]
@@ -182,5 +200,9 @@ class MemoryEngine:
                 if 0 <= idx < len(results):
                     r = {**results[idx], "score": score}
                     ordered.append(r)
-            return ordered
-        return results[: max(l2_limit, l3_limit)]
+            results = ordered
+        else:
+            results = results[: max(l2_limit, l3_limit)]
+
+        _record("combined", time.perf_counter() - t0)
+        return results

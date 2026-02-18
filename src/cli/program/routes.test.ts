@@ -35,4 +35,14 @@ describe("program routes", () => {
     expect(route).not.toBeNull();
     await expect(route?.run(["node", "openclaw", "config", "unset"])).resolves.toBe(false);
   });
+
+  it("matches goal route", () => {
+    expect(findRoutedCommand(["goal"])).not.toBeNull();
+  });
+
+  it("returns false for goal route when goal text is missing", async () => {
+    const route = findRoutedCommand(["goal"]);
+    expect(route).not.toBeNull();
+    await expect(route?.run(["node", "openclaw", "goal"])).resolves.toBe(false);
+  });
 });

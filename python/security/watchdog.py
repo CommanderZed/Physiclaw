@@ -90,6 +90,11 @@ def _watchdog_loop(pid: int, interval_sec: float = 5.0) -> None:
                     "Only local/private subnets are allowed. Exiting.",
                     ip_str, port, status,
                 )
+                try:
+                    from core.audit import audit_log
+                    audit_log("egress_block", remote_ip=ip_str, remote_port=port, status=status)
+                except Exception:
+                    pass
             sys.exit(1)
 
 

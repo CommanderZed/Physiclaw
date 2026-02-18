@@ -187,6 +187,38 @@ const routeWipe: RouteSpec = {
   },
 };
 
+const routeGoal: RouteSpec = {
+  match: (path) => path[0] === "goal",
+  run: async (argv) => {
+    const positionals = getCommandPositionals(argv);
+    const goalText = positionals.slice(1).join(" ").trim();
+    if (!goalText) {
+      return false;
+    }
+    const persona = getFlagValue(argv, "--persona") ?? process.env.PHYSICLAW_PERSONA ?? "sre";
+    const bridgeUrl =
+      getFlagValue(argv, "--bridge-url") ?? process.env.PHYSICLAW_BRIDGE_URL ?? "http://localhost:8000";
+    const apiKey = getFlagValue(argv, "--key") ?? process.env.PHYSICLAW_API_KEY ?? undefined;
+    const jwt = getFlagValue(argv, "--jwt") ?? process.env.PHYSICLAW_JWT ?? undefined;
+    const json = hasFlag(argv, "--json");
+    const timeoutSec = getPositiveIntFlagValue(argv, "--timeout");
+    const { goalCommand } = await import("../../commands/goal.js");
+    await goalCommand(
+      {
+        goal: goalText,
+        persona,
+        bridgeUrl,
+        apiKey,
+        jwt,
+        json,
+        timeoutMs: timeoutSec != null ? timeoutSec * 1000 : undefined,
+      },
+      defaultRuntime,
+    );
+    return true;
+  },
+};
+
 const routeModelsStatus: RouteSpec = {
   match: (path) => path[0] === "models" && path[1] === "status",
   run: async (argv) => {
@@ -251,6 +283,7 @@ const routes: RouteSpec[] = [
   routeAgentsList,
   routeMemoryStatus,
   routeWipe,
+  routeGoal,
   routeConfigGet,
   routeConfigUnset,
   routeModelsList,

@@ -14,17 +14,27 @@ import os
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 
 # Local modules
+from core.audit import audit_log
 from core.memory import MemoryManager, clean_telemetry
-from cli import ToolExecutor, Persona, SecurityViolation, SRE_WHITELIST, SECOPS_WHITELIST
+from cli import (
+    DATA_ARCHITECT_WHITELIST,
+    SECOPS_WHITELIST,
+    SRE_WHITELIST,
+    Persona,
+    SecurityViolation,
+    ToolExecutor,
+)
 
 # --- State (lazy init) -------------------------------------------------------
 
 _memory: MemoryManager | None = None
 _executor: ToolExecutor | None = None
+_API_KEY_MAP: dict[str, set[str]] | None = None
 
 
 def get_memory() -> MemoryManager:
@@ -37,9 +47,118 @@ def get_memory() -> MemoryManager:
 def get_executor() -> ToolExecutor:
     global _executor
     if _executor is None:
-        persona = os.getenv("PHYSICLAW_PERSONA", "sre").lower()
-        _executor = ToolExecutor(persona=Persona.SRE if persona == "sre" else Persona.SECOPS)
+        from cli import _normalize_persona_str
+        p = _normalize_persona_str(os.getenv("PHYSICLAW_PERSONA", "sre"))
+        _executor = ToolExecutor(persona=Persona(p))
     return _executor
+
+
+def _load_api_key_map() -> dict[str, set[str]]:
+    """
+    Parse PHYSICLAW_API_KEYS into { persona: {keys...} }.
+    Format: "sre:KEY_SRE,secops:KEY_SECOPS,data_architect:KEY_DATA" or "*:KEY" for any persona.
+    """
+    global _API_KEY_MAP
+    if _API_KEY_MAP is not None:
+        return _API_KEY_MAP
+    raw = os.getenv("PHYSICLAW_API_KEYS", "").strip()
+    mapping: dict[str, set[str]] = {}
+    if raw:
+        from cli import _normalize_persona_str
+        for part in raw.split(","):
+            part = part.strip()
+            if not part:
+                continue
+            if ":" in part:
+                persona_raw, key = part.split(":", 1)
+                persona = _normalize_persona_str(persona_raw)
+            else:
+                persona = "*"
+                key = part
+            if not key:
+                continue
+            mapping.setdefault(persona, set()).add(key)
+    _API_KEY_MAP = mapping
+    return mapping
+
+
+def _auth_required() -> bool:
+    v = os.getenv("PHYSICLAW_REQUIRE_AUTH", "").strip().lower()
+    return v in ("1", "true", "yes", "required")
+
+
+def _validate_jwt(request: Request, persona: str) -> bool:
+    """Optional local JWT auth (HS256, on-prem only).
+
+    Enabled when PHYSICLAW_JWT_SECRET is set. Expects:
+    - Authorization: Bearer <jwt>
+    - Claims: optional `persona` (or `role`) matching requested persona,
+      and optional `scope` including `physiclaw:goal` or `physiclaw:*`.
+    """
+    secret = os.getenv("PHYSICLAW_JWT_SECRET", "").strip()
+    if not secret:
+        return False
+    auth = request.headers.get("authorization") or request.headers.get("Authorization")
+    if not auth or not auth.lower().startswith("bearer "):
+        return False
+    token = auth.split(" ", 1)[1].strip()
+    if not token:
+        return False
+    try:
+        import jwt  # type: ignore[import]
+    except Exception:
+        return False
+    try:
+        claims = jwt.decode(token, secret, algorithms=["HS256"], options={"verify_aud": False})
+    except Exception:
+        return False
+
+    claim_persona = str((claims.get("persona") or claims.get("role") or "")).strip().lower()
+    if claim_persona and claim_persona != persona:
+        return False
+
+    scope = claims.get("scope")
+    if scope:
+        scopes = str(scope).split()
+        if "physiclaw:goal" not in scopes and "physiclaw:*" not in scopes:
+            return False
+
+    return True
+
+
+def _is_authorized(request: Request, persona: str) -> bool:
+    """
+    Local-first auth:
+    - PHYSICLAW_API_KEYS="sre:KEY_SRE,secops:KEY_SECOPS,data_architect:KEY_DATA"
+    - Header: X-Physiclaw-Key: <key>
+    - Optional: PHYSICLAW_JWT_SECRET + Authorization: Bearer <jwt>
+    - If PHYSICLAW_REQUIRE_AUTH=1, a valid JWT or API key must be present and mapped.
+    - If not required but keys are set, a provided key/JWT must still be valid; missing creds are allowed.
+    """
+    # Prefer JWT if configured and present
+    if _validate_jwt(request, persona):
+        return True
+
+    keys_map = _load_api_key_map()
+    header_key = request.headers.get("x-physiclaw-key")
+
+    # No keys configured
+    if not keys_map:
+        return not _auth_required()
+
+    allowed = set()
+    allowed.update(keys_map.get(persona, set()))
+    allowed.update(keys_map.get("*", set()))
+
+    if _auth_required():
+        if not header_key or header_key not in allowed:
+            return False
+        return True
+
+    # Not required: if key provided, it must be valid; if missing, allow.
+    if header_key is None:
+        return True
+    return header_key in allowed
 
 
 # --- Request/Response models -------------------------------------------------
@@ -47,7 +166,7 @@ def get_executor() -> ToolExecutor:
 class GoalRequest(BaseModel):
     """Only goals are accepted. No tool name or direct tool request."""
     goal: str = Field(..., min_length=1, description="User intent / objective")
-    persona: str | None = Field(default=None, description="sre | secops; overrides env")
+    persona: str | None = Field(default=None, description="sre | secops | data_architect; overrides env")
 
 
 class GoalResponse(BaseModel):
@@ -65,13 +184,14 @@ def resolve_goal_to_tools(goal: str, persona: str) -> list[str]:
     Map a goal to the subset of tools this persona is allowed to use.
     Node never sends tool names; we derive them from goal + whitelist.
     """
-    persona = persona.lower()
-    if persona == "sre":
-        # SRE: read-only infra only. We do not infer arbitrary tools from goal text;
-        # we return the full SRE whitelist so the executor can allow only those.
+    from cli import _normalize_persona_str
+    p = _normalize_persona_str(persona)
+    if p == "sre":
         return list(SRE_WHITELIST)
-    if persona == "secops":
+    if p == "secops":
         return list(SECOPS_WHITELIST)
+    if p == "data_architect":
+        return list(DATA_ARCHITECT_WHITELIST)
     return []
 
 
@@ -104,14 +224,25 @@ app = FastAPI(
 
 
 @app.post("/goal", response_model=GoalResponse)
-async def submit_goal(req: GoalRequest) -> GoalResponse:
+async def submit_goal(req: GoalRequest, request: Request) -> GoalResponse:
     """
     Accept a goal only. Tool selection is determined by the backend from persona.
     Returns the list of tools this persona is allowed to use (for display/logging).
     """
-    persona = (req.persona or os.getenv("PHYSICLAW_PERSONA", "sre")).lower()
-    if persona not in ("sre", "secops"):
-        raise HTTPException(status_code=400, detail="persona must be 'sre' or 'secops'")
+    from cli import _normalize_persona_str
+    raw = (req.persona or os.getenv("PHYSICLAW_PERSONA", "sre")).strip().lower()
+    persona = _normalize_persona_str(raw)
+    if persona not in ("sre", "secops", "data_architect"):
+        raise HTTPException(status_code=400, detail="persona must be 'sre', 'secops', or 'data_architect'")
+
+    if not _is_authorized(request, persona):
+        audit_log("auth_denied", persona=persona)
+        has_api_key = bool(request.headers.get("x-physiclaw-key"))
+        has_jwt = bool(request.headers.get("authorization") or request.headers.get("Authorization"))
+        status = 401 if not (has_api_key or has_jwt) else 403
+        raise HTTPException(status_code=status, detail="invalid or unauthorized credentials for persona")
+
+    audit_log("goal", persona=persona, goal_len=len(req.goal))
 
     # Store goal in memory (scrub telemetry first)
     memory = get_memory()
@@ -130,6 +261,13 @@ async def submit_goal(req: GoalRequest) -> GoalResponse:
 @app.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "ok", "service": "physiclaw-bridge", "version": __version__}
+
+
+@app.get("/metrics", response_class=PlainTextResponse)
+async def metrics() -> str:
+    """Prometheus text exposition (Phase 2). No egress; scrape locally."""
+    from core.audit import get_prometheus_metrics
+    return get_prometheus_metrics()
 
 
 @app.get("/memory/status")

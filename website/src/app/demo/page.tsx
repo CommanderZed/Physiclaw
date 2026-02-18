@@ -18,7 +18,7 @@ import {
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
 
-type Persona = "sre" | "secops";
+type Persona = "sre" | "secops" | "data_architect";
 
 const PERSONA_CONFIG: Record<
   Persona,
@@ -33,6 +33,11 @@ const PERSONA_CONFIG: Record<
     label: "SecOps Auditor",
     allowed: ["bandit-scan", "iam-inspect"],
     denied: ["data-export"],
+  },
+  data_architect: {
+    label: "Data Architect",
+    allowed: ["duckdb", "dbt run", "sqlmesh audit"],
+    denied: ["drop table", "export to s3"],
   },
 };
 
@@ -54,9 +59,15 @@ function isViolation(persona: Persona, input: string, strictMode: boolean): bool
     if (strictMode) return base || /\b(scale|restart|apply)\b/.test(lower);
     return base;
   }
-  const base = /\b(export|drop)\b/.test(lower) || lower.includes("data-export");
-  if (strictMode) return base || /\b(ssh|scp|curl.*http)/.test(lower);
-  return base;
+  if (persona === "secops") {
+    const base = /\b(export|drop)\b/.test(lower) || lower.includes("data-export");
+    if (strictMode) return base || /\b(ssh|scp|curl.*http)/.test(lower);
+    return base;
+  }
+  if (persona === "data_architect") {
+    return /\b(drop\s+table|export\s+to\s+s3|truncate)\b/.test(lower) || (strictMode && /\b(delete\s+from|\.write\s*\()/.test(lower));
+  }
+  return false;
 }
 
 export default function DemoPage() {
@@ -285,7 +296,7 @@ export default function DemoPage() {
               </Link>
               <span className="text-sage-dim text-sm">Persona:</span>
               <div className="flex rounded-lg border border-navy-200/60 bg-navy-300/60 p-0.5">
-                {(["sre", "secops"] as const).map((p) => (
+                {(["sre", "secops", "data_architect"] as const).map((p) => (
                   <button
                     key={p}
                     type="button"
@@ -304,7 +315,9 @@ export default function DemoPage() {
               <div className="text-xs text-sage-dim">
                 {persona === "sre"
                   ? "Allowed: kubectl-get, log-aggregator. Denied: kubectl-delete."
-                  : "Allowed: bandit-scan, iam-inspect. Denied: data-export."}
+                  : persona === "secops"
+                    ? "Allowed: bandit-scan, iam-inspect. Denied: data-export."
+                    : "Allowed: duckdb, dbt run, sqlmesh audit. Denied: drop table, export to s3."}
               </div>
             </div>
 
@@ -368,7 +381,7 @@ export default function DemoPage() {
             </div>
 
             <p className="mt-3 text-xs text-sage-dim">
-              Try &quot;delete&quot;, &quot;drop&quot;, or &quot;export&quot; to see blocks. With Strict mode on, &quot;scale&quot;, &quot;restart&quot;, or &quot;apply&quot; (SRE) and &quot;ssh&quot;/&quot;scp&quot; (SecOps) are also blocked.
+              Try &quot;delete&quot;, &quot;drop&quot;, or &quot;export&quot; to see blocks. Data Architect: &quot;drop table&quot;, &quot;export to s3&quot;. Strict mode adds more denials per persona.
             </p>
           </div>
         </div>

@@ -9,3 +9,4 @@ numpy>=1.26.0,<3.0.0
 psutil>=6.0.0
 # Optional: local reranker for RAG (pip install flag-transformers or sentence-transformers)
 # flag-transformers>=0.0.0  # BAAI/bge-reranker-base
+PyJWT>=2.8.0

@@ -39,10 +39,31 @@ SECOPS_WHITELIST = frozenset({
     "iam-inspect",
     "vault-read",
 })
+# Phase 3: local data orchestration — read/transform/audit only, no arbitrary shell
+DATA_ARCHITECT_WHITELIST = frozenset({
+    "duckdb",
+    "duckdb-query",
+    "dbt run",
+    "dbt test",
+    "dbt build",
+    "dbt compile",
+    "dbt docs generate",
+    "sqlmesh audit",
+    "sqlmesh plan",
+    "sqlmesh run",
+})
 
 # Normalize for lookup: lowercase, single spaces.
 def _norm(tool: str) -> str:
     return " ".join(tool.lower().split())
+
+
+def _normalize_persona_str(s: str) -> str:
+    """Map 'data' or 'data_architect' to Persona value."""
+    s = (s or "").strip().lower()
+    if s in ("data", "data_architect", "dataarchitect"):
+        return "data_architect"
+    return s or "sre"
 
 
 class SecurityViolation(Exception):
@@ -60,6 +81,7 @@ class SecurityViolation(Exception):
 class Persona(str, Enum):
     SRE = "sre"
     SECOPS = "secops"
+    DATA_ARCHITECT = "data_architect"
 
 
 class ToolExecutor:
@@ -70,9 +92,14 @@ class ToolExecutor:
 
     def __init__(self, persona: Persona | str = Persona.SRE):
         if isinstance(persona, str):
-            persona = Persona(persona.lower())
+            persona = Persona(_normalize_persona_str(persona))
         self.persona = persona
-        self._whitelist = SRE_WHITELIST if persona == Persona.SRE else SECOPS_WHITELIST
+        if persona == Persona.SRE:
+            self._whitelist = SRE_WHITELIST
+        elif persona == Persona.SECOPS:
+            self._whitelist = SECOPS_WHITELIST
+        else:
+            self._whitelist = DATA_ARCHITECT_WHITELIST
 
     def allowed(self, tool: str) -> bool:
         n = _norm(tool)
@@ -85,8 +112,24 @@ class ToolExecutor:
         Returns a result dict or raises SecurityViolation.
         """
         if not self.allowed(tool):
+            try:
+                from core.audit import audit_log
+                audit_log("security_violation", persona=self.persona.value, tool=tool)
+            except Exception:
+                pass
             raise SecurityViolation(tool, self.persona.value)
-        return self._run_isolated(tool, *args, **kwargs)
+        result = self._run_isolated(tool, *args, **kwargs)
+        try:
+            from core.audit import audit_log
+            audit_log(
+                "tool_call",
+                persona=self.persona.value,
+                tool=tool,
+                outcome="ok" if result.get("ok") else "error",
+            )
+        except Exception:
+            pass
+        return result
 
     def _clean_env(self) -> dict[str, str]:
         """Build minimal env for subprocess: only safe keys, no secrets."""
@@ -120,16 +163,42 @@ class ToolExecutor:
             return ["nmap"] + [str(a) for a in args]
         if "bandit" in n:
             return ["bandit"] + [str(a) for a in args]
+        # Data Architect (Phase 3)
+        if "duckdb" in n:
+            return ["duckdb"] + [str(a) for a in args]
+        if n.startswith("dbt "):
+            parts = shlex.split(tool)
+            return (parts if len(parts) >= 2 else ["dbt", parts[0] if parts else "run"]) + [str(a) for a in args]
+        if "sqlmesh" in n:
+            parts = shlex.split(tool)
+            return (parts if parts else ["sqlmesh", "plan"]) + [str(a) for a in args]
         # Fallback: treat tool as a single command, args appended
         return shlex.split(tool) + [str(a) for a in args]
 
     def _run_isolated(self, tool: str, *args: Any, **kwargs: Any) -> dict[str, Any]:
-        """Run whitelisted tool in a restricted subprocess: clean env, timeout, no inherited secrets."""
+        """Run whitelisted tool in restricted subprocess or hardened bwrap sandbox (Phase 1)."""
         argv = self._tool_to_argv(tool, *args)
         if not argv:
             return {"ok": False, "error": "empty command", "stdout": "", "stderr": ""}
         env = self._clean_env()
         timeout_sec = kwargs.get("timeout") if isinstance(kwargs.get("timeout"), (int, float)) else 300
+        cwd = os.environ.get("PHYSICLAW_CWD") or os.getcwd()
+
+        # Phase 1: hardened sandbox when PHYSICLAW_SANDBOX=1 and bwrap is available
+        try:
+            from security.sandbox import bwrap_available, run_in_bwrap, sandbox_allow_network, sandbox_enabled
+            if sandbox_enabled() and bwrap_available():
+                return run_in_bwrap(
+                    argv,
+                    env=env,
+                    cwd=cwd,
+                    timeout_sec=timeout_sec,
+                    allow_network=sandbox_allow_network(),
+                )
+        except ImportError:
+            pass
+
+        # Fallback: clean-env subprocess (no bwrap)
         try:
             result = subprocess.run(
                 argv,
@@ -137,7 +206,7 @@ class ToolExecutor:
                 capture_output=True,
                 text=True,
                 timeout=timeout_sec,
-                cwd=os.environ.get("PHYSICLAW_CWD") or os.getcwd(),
+                cwd=cwd,
             )
             return {
                 "ok": result.returncode == 0,
@@ -154,5 +223,9 @@ class ToolExecutor:
 
 
 def get_executor(persona: str | None = None) -> ToolExecutor:
-    p = (persona or os.getenv("PHYSICLAW_PERSONA", "sre")).lower()
-    return ToolExecutor(persona=Persona.SRE if p == "sre" else Persona.SECOPS)
+    p = _normalize_persona_str(persona or os.getenv("PHYSICLAW_PERSONA", "sre"))
+    if p == "secops":
+        return ToolExecutor(persona=Persona.SECOPS)
+    if p == "data_architect":
+        return ToolExecutor(persona=Persona.DATA_ARCHITECT)
+    return ToolExecutor(persona=Persona.SRE)

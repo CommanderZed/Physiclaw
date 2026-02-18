@@ -49,12 +49,11 @@ Most AI agent platforms require cloud connectivity, send telemetry upstream, or 
 
 ---
 
-## Whitepaper (Enterprise theory & security)
+## Whitepaper & Roadmap
 
-For the full design rationale, security architecture, and enterprise deployment story, see:
-
-- **[Whitepaper (in-repo)](docs/WHITEPAPER.md)** — Markdown in this repo
+- **[Whitepaper (in-repo)](docs/WHITEPAPER.md)** — Design rationale, security architecture, enterprise deployment
 - **[Whitepaper (web)](https://www.physiclaw.dev/whitepaper)** — Same content on the site
+- **[Roadmap (v0.2.0 Sovereign Swarm)](docs/ROADMAP.md)** — Current assessment, strategic gaps, and phased plan (sandboxing, observability, Data Architect persona, local auth). Includes an [optional Grafana dashboard](docs/grafana/README.md) for bridge metrics.
 
 ---
 
@@ -177,6 +176,14 @@ audit:
   export: "siem-sink"       # compliance export target
   retention: "forever"      # WORM retention policy
 ```
+
+### Local API key auth (bridge)
+
+When using the Python bridge (see [Roadmap](docs/ROADMAP.md)), you can require API keys for `submit_goal`:
+
+- **`PHYSICLAW_REQUIRE_AUTH=1`** — Require auth for all goal submissions.
+- **`PHYSICLAW_API_KEYS`** — Comma-separated `persona:key` entries (e.g. `sre:secret1,data:secret2`).
+- Send **`X-Physiclaw-Key: <key>`** or **`Authorization: Bearer <jwt>`** (when `PHYSICLAW_JWT_SECRET` is set on the bridge) on requests. Unauthorized requests return 401/403 and are recorded in the audit log and `physiclaw_auth_denied_total` metric. CLI: `physiclaw goal "<text>" --persona sre [--key KEY]` or `[--jwt JWT]` (or env `PHYSICLAW_API_KEY` / `PHYSICLAW_JWT`).
 
 ### Supported Runtimes
 vLLM, TGI, Ollama, GGUF, ONNX, Triton
