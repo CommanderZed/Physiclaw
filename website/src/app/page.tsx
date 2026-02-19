@@ -16,6 +16,7 @@ import AgentSkillMatrix from "@/components/AgentSkillMatrix";
 import SecurityMatrix from "@/components/SecurityMatrix";
 import ExtendMatrix from "@/components/ExtendMatrix";
 import IntegrationGrid from "@/components/IntegrationGrid";
+import EnterpriseDashboardSection from "@/components/EnterpriseDashboardSection";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
 
@@ -253,6 +254,8 @@ export default function Home() {
           <SecurityMatrix />
         </div>
       </section>
+
+      <EnterpriseDashboardSection />
 
       {/* ═══════════ EXTEND ═══════════ */}
       <section className="relative z-10 py-24 px-6" id="extend">
