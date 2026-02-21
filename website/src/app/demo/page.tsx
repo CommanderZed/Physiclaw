@@ -1,18 +1,71 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Cpu,
-  Shield,
   Send,
   ChevronDown,
-  Zap,
   HardDrive,
   WifiOff,
+  HelpCircle,
+  X,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
+
+const DEMO_TOUR_STEPS: {
+  id: string;
+  title: string;
+  body: string;
+  value: string;
+  target: "dashboard" | "sessionlog" | "rightsidebar" | "inputbar" | null;
+}[] = [
+  {
+    id: "welcome",
+    title: "Policy-first agent control",
+    body: "Physiclaw keeps every request inside your perimeter—no cloud egress. This walkthrough shows the control plane, audit trail, and live policy.",
+    value: "Try one allowed goal, then one blocked goal, to see the guardrails.",
+    target: null,
+  },
+  {
+    id: "dashboard",
+    title: "Live control plane",
+    body: "Goals by role, denials, and policy checks update live. Tune Fast vs Strict; block rate and tool calls respond immediately.",
+    value: "Same control surface teams use in production.",
+    target: "dashboard",
+  },
+  {
+    id: "sessionlog",
+    title: "Full audit trail",
+    body: "Every goal logged with role, policy check, and allow/deny. Schema matches production.",
+    value: "Every decision visible and attributable.",
+    target: "sessionlog",
+  },
+  {
+    id: "rightsidebar",
+    title: "Commands & actions",
+    body: "Click an example goal to fill the input bar, or see recent goals and agent actions (bridge, tool_call, audit) as you run them.",
+    value: "Quick way to try allowed and denied commands without typing.",
+    target: "rightsidebar",
+  },
+  {
+    id: "inputbar",
+    title: "Allow, then block",
+    body: "Send a goal. Role is inferred; allow/deny list is applied. Run an allowed command (e.g. kubectl get pods), then a blocked one (e.g. delete deployment).",
+    value: "That contrast proves policy enforcement.",
+    target: "inputbar",
+  },
+  {
+    id: "done",
+    title: "You’re all set",
+    body: "Close and try one allowed goal, one denied. Watch the dashboard and log. Use Fast vs Strict to see policy tighten.",
+    value: "Policy-first, zero egress, full audit. More: Docs and Whitepaper in the nav.",
+    target: null,
+  },
+];
 
 type Persona = "sre" | "secops" | "data_architect";
 
@@ -163,18 +216,21 @@ function GoalsByRoleDonut({
 }
 
 export default function DemoPage() {
+  const [tourStep, setTourStep] = useState<number | null>(0);
+  const [tourSpotlightRect, setTourSpotlightRect] = useState<DOMRect | null>(null);
+  const dashboardRef = useRef<HTMLElement>(null);
+  const sessionLogRef = useRef<HTMLDivElement>(null);
+  const inputBarRef = useRef<HTMLFormElement>(null);
+  const rightSidebarRef = useRef<HTMLElement>(null);
+
   const [lastInferredPersona, setLastInferredPersona] = useState<Persona>("sre");
   const [vramUsed, setVramUsed] = useState(42);
   const [vramMax, setVramMax] = useState(48);
   const [modelId, setModelId] = useState<"70b" | "8b">("70b");
   const [strictMode, setStrictMode] = useState(false);
-  const [logLines, setLogLines] = useState<LogEntry[]>(() => {
-    const t = new Date().toISOString().slice(11, 19);
-    return [
-      { kind: "system", text: "Session started. Zero egress; all traffic inside perimeter.", ts: t },
-      { kind: "system", text: "Submit a goal. Persona is inferred from goal (e.g. kubectl→SRE, bandit→SecOps, dbt→Data); policy and bridge evaluate." },
-    ];
-  });
+  const [logLines, setLogLines] = useState<LogEntry[]>(() => [
+    { kind: "system", text: "Submit a goal. Persona is inferred from goal (e.g. kubectl→SRE, bandit→SecOps, dbt→Data); policy and bridge evaluate." },
+  ]);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const logEndRef = useRef<HTMLDivElement>(null);
@@ -188,9 +244,45 @@ export default function DemoPage() {
   const [lastLatencyMs, setLastLatencyMs] = useState<number | null>(120);
   const [policyChecksCount, setPolicyChecksCount] = useState(4);
 
+  const initialLogLengthRef = useRef(logLines.length);
   useEffect(() => {
+    if (logLines.length <= initialLogLengthRef.current) return;
+    initialLogLengthRef.current = logLines.length;
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [logLines]);
+
+  const tourTargetRefs = useCallback(() => ({
+    dashboard: dashboardRef.current,
+    sessionlog: sessionLogRef.current,
+    rightsidebar: rightSidebarRef.current,
+    inputbar: inputBarRef.current,
+  }), []);
+
+  useEffect(() => {
+    if (tourStep === null || tourStep < 0 || tourStep >= DEMO_TOUR_STEPS.length) {
+      setTourSpotlightRect(null);
+      return;
+    }
+    const step = DEMO_TOUR_STEPS[tourStep];
+    const refs = tourTargetRefs();
+    const el = step.target ? refs[step.target] : null;
+    if (!el) {
+      setTourSpotlightRect(null);
+      return;
+    }
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      setTourSpotlightRect(rect);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("scroll", update, true);
+    };
+  }, [tourStep, tourTargetRefs]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -271,32 +363,150 @@ export default function DemoPage() {
     }
   };
 
+  const currentStep = tourStep !== null && tourStep >= 0 && tourStep < DEMO_TOUR_STEPS.length ? DEMO_TOUR_STEPS[tourStep] : null;
+  const isFirst = tourStep === 0;
+  const isLast = tourStep === DEMO_TOUR_STEPS.length - 1;
+  const popupOnLeft = currentStep?.target === "sessionlog" || currentStep?.target === "rightsidebar" || currentStep?.target === "inputbar";
+
   return (
     <div className="min-h-screen bg-navy bg-grid relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-gold/[0.03] rounded-full blur-[120px] pointer-events-none" />
 
+      {/* Tour: single overlay layer with same opacity every step; clip-path cutout when spotlight */}
+      <AnimatePresence>
+        {tourStep !== null && currentStep && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 pointer-events-none"
+          >
+            {/* One dim layer — same opacity for all steps; hole cut when spotlight exists */}
+            <div
+              className="absolute inset-0 bg-black/50 pointer-events-auto"
+              style={
+                tourSpotlightRect
+                  ? (() => {
+                      const g = 6;
+                      const t = Math.floor(tourSpotlightRect.top) - g;
+                      const b = Math.ceil(tourSpotlightRect.bottom) + g;
+                      const l = Math.floor(tourSpotlightRect.left) - g;
+                      const r = Math.ceil(tourSpotlightRect.right) + g;
+                      return {
+                        clipPath: `polygon(0 0, 100vw 0, 100vw ${t}px, ${l}px ${t}px, ${l}px ${b}px, ${r}px ${b}px, ${r}px ${t}px, 100vw ${t}px, 100vw 100vh, 0 100vh, 0 0)`,
+                      };
+                    })()
+                  : undefined
+              }
+              onClick={() => setTourStep(null)}
+              aria-label="Close tour"
+            />
+            {tourSpotlightRect && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="absolute rounded-lg pointer-events-none ring-2 ring-gold border border-gold"
+                style={{
+                  left: Math.floor(tourSpotlightRect.left) - 6,
+                  top: Math.floor(tourSpotlightRect.top) - 6,
+                  width: Math.ceil(tourSpotlightRect.width) + 12,
+                  height: Math.ceil(tourSpotlightRect.height) + 12,
+                }}
+              />
+            )}
+            <div className={`absolute inset-0 flex items-center p-4 pointer-events-none ${popupOnLeft ? "justify-start" : "justify-center"}`}>
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                className="pointer-events-auto w-full max-w-lg rounded-xl border border-navy-200/60 bg-navy-300/95 backdrop-blur-sm shadow-2xl p-5 flex flex-col gap-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-mono text-sage-dim uppercase tracking-wider">
+                    Step {tourStep + 1} of {DEMO_TOUR_STEPS.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setTourStep(null)}
+                    className="p-1.5 rounded-lg text-sage-dim hover:text-sage-light hover:bg-navy-200/50"
+                    aria-label="Skip tour"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="h-1 w-full rounded-full bg-navy-200/40 overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full bg-gold/70"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${((tourStep ?? 0) + 1) / DEMO_TOUR_STEPS.length * 100}%` }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </div>
+                <h3 className="text-lg font-semibold text-gold-light leading-tight">{currentStep.title}</h3>
+                <p className="text-[15px] text-sage-light leading-relaxed">{currentStep.body}</p>
+                <p className="text-sm text-sage-dim border-l-2 border-gold/50 pl-3 py-0.5 bg-navy-200/20 rounded-r">{currentStep.value}</p>
+                <div className="flex items-center justify-between gap-2 pt-1">
+                  <div className="flex items-center gap-1">
+                    {!isFirst && (
+                      <button
+                        type="button"
+                        onClick={() => setTourStep((s) => (s ?? 0) - 1)}
+                        className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-sage-dim hover:text-sage-light hover:bg-navy-200/50"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" /> Back
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {!isLast ? (
+                      <button
+                        type="button"
+                        onClick={() => setTourStep((s) => (s ?? 0) + 1)}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-gold/20 text-gold hover:bg-gold/30"
+                      >
+                        Next <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setTourStep(null)}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-gold/25 text-gold hover:bg-gold/35 border border-gold/40"
+                      >
+                        Close and try it
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <SiteNav logoHref="/" showDocsLink />
 
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Minimal header + flow pill */}
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <h1 className="text-xl sm:text-2xl font-bold text-gold-light">
-            Agent session
-          </h1>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-navy-200/50 bg-navy-300/50 text-xs text-sage-dim">
-            <Zap className="w-3.5 h-3.5 text-gold" />
-            <span>You → Agent → Gateway → Tools</span>
-            <span className="text-sage">·</span>
-            <Shield className="w-3.5 h-3.5 text-crimson-light" />
-            <span className="text-crimson-light">Zero egress</span>
-          </div>
+      {/* Start / replay tour — visible when tour is closed */}
+      {tourStep === null && (
+        <div className="fixed bottom-6 right-6 z-40">
+          <button
+            type="button"
+            onClick={() => setTourStep(0)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-navy-200/50 bg-navy-300/90 backdrop-blur-sm text-sage-light hover:text-gold hover:border-gold/50 shadow-lg transition-colors"
+            aria-label="Start demo walkthrough"
+          >
+            <HelpCircle className="w-4 h-4" />
+            <span className="text-sm font-medium">Demo walkthrough</span>
+          </button>
         </div>
+      )}
 
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Compact dashboard sidebar: metrics + session controls */}
-          <aside className="w-full lg:w-72 shrink-0 space-y-4">
-            <div className="rounded-xl border border-navy-200/50 bg-navy-300/80 backdrop-blur-sm overflow-hidden">
-              <div className="p-3 space-y-3">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:h-[680px]">
+          {/* Left: dashboard */}
+          <aside ref={dashboardRef} className="w-full lg:w-72 shrink-0 flex flex-col">
+            <div className="rounded-xl border border-navy-200/50 bg-navy-300/80 backdrop-blur-sm overflow-hidden flex-1 min-h-0 flex flex-col">
+              <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3">
                 <div className="grid grid-cols-2 gap-2">
                   <div className="rounded-lg border border-navy-200/40 bg-navy-300/30 px-3 py-2 overflow-hidden flex flex-col items-center">
                     <p className="text-[10px] font-mono text-sage-dim uppercase tracking-wider mb-1.5 w-full text-left">Goals by role</p>
@@ -388,14 +598,14 @@ export default function DemoPage() {
             </div>
           </aside>
 
-          {/* Main: conversation + single chat-style input bar */}
-          <div className="flex-1 min-w-0 flex flex-col">
-            <div className="rounded-xl border border-navy-200/50 bg-navy-300/80 backdrop-blur-sm shadow-2xl shadow-black/50 overflow-hidden flex flex-col min-h-[420px]">
-              <div className="px-4 py-2 border-b border-navy-200/60 flex items-center justify-between">
+          {/* Center: session log — fixed height, content scrolls */}
+          <div className="flex-1 min-w-0 flex flex-col min-h-[480px] lg:min-h-0 lg:h-full">
+            <div ref={sessionLogRef} className="rounded-xl border border-navy-200/50 bg-navy-300/80 backdrop-blur-sm shadow-2xl shadow-black/50 overflow-hidden flex flex-col h-[480px] lg:h-full min-h-0">
+              <div className="px-4 py-2 border-b border-navy-200/60 flex items-center justify-between shrink-0">
                 <span className="text-xs font-medium text-sage-light">Session log</span>
                 <span className="text-[10px] text-sage-dim">Role + policy apply to every command</span>
               </div>
-              <div className="flex-1 p-4 font-mono text-sm overflow-y-auto min-h-[240px]">
+              <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 font-mono text-sm">
                 {logLines.map((line, i) => (
                   <div
                     key={i}
@@ -416,7 +626,7 @@ export default function DemoPage() {
                 <div ref={logEndRef} />
               </div>
 
-              <form onSubmit={handleSubmit} className="border-t border-navy-200/60 p-3">
+              <form ref={inputBarRef} onSubmit={handleSubmit} className="border-t border-navy-200/60 p-3 shrink-0">
                 <div className="rounded-2xl border border-navy-200/50 bg-navy-300/90 shadow-inner flex items-center gap-2 px-3 py-2.5">
                   <input
                     ref={inputRef}
@@ -440,12 +650,90 @@ export default function DemoPage() {
                     </button>
                   </div>
                 </div>
-                <p className="mt-2 text-[10px] text-sage-dim px-1">
-                  Persona inferred from goal. Last: {PERSONA_CONFIG[lastInferredPersona].label}. Allowed per role: SRE (kubectl-get, log-aggregator), SecOps (bandit-scan, iam-inspect), Data (duckdb, dbt run).
-                </p>
               </form>
             </div>
           </div>
+
+          {/* Right: commands and agent actions — same height as dashboard and session log */}
+          <aside ref={rightSidebarRef} className="w-full lg:w-72 shrink-0 flex flex-col">
+            <div className="rounded-xl border border-navy-200/50 bg-navy-300/80 backdrop-blur-sm overflow-hidden flex-1 min-h-0 flex flex-col lg:h-full min-h-[280px]">
+              <div className="px-3 py-2 border-b border-navy-200/60 shrink-0">
+                <span className="text-[10px] font-mono text-sage-dim uppercase tracking-wider">Commands &amp; actions</span>
+              </div>
+              <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-4">
+                <div>
+                  <p className="text-[10px] font-mono text-sage-dim uppercase tracking-wider mb-2">Try a goal</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      "kubectl get pods",
+                      "bandit-scan",
+                      "dbt run",
+                      "delete deployment",
+                      "data-export",
+                    ].map((goal) => (
+                      <button
+                        key={goal}
+                        type="button"
+                        onClick={() => {
+                          setInput(goal);
+                          inputRef.current?.focus();
+                        }}
+                        className="px-2 py-1 rounded-md text-[11px] font-mono bg-navy-200/50 text-sage-light hover:bg-gold/20 hover:text-gold border border-navy-200/40 hover:border-gold/40 transition-colors truncate max-w-full"
+                        title={`Use "${goal}" in the input bar`}
+                      >
+                        {goal}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] font-mono text-sage-dim uppercase tracking-wider mb-2">Recent goals</p>
+                  <ul className="space-y-1.5 font-mono text-xs">
+                    {logLines
+                      .filter((l) => l.kind === "goal")
+                      .slice(-5)
+                      .reverse()
+                      .map((line, i) => (
+                        <li key={i} className="text-sage-light truncate pr-2" title={line.text}>
+                          {line.text}
+                        </li>
+                      ))}
+                    {logLines.filter((l) => l.kind === "goal").length === 0 && (
+                      <li className="text-sage-dim">No goals yet</li>
+                    )}
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-[10px] font-mono text-sage-dim uppercase tracking-wider mb-2">Agent actions</p>
+                  <ul className="space-y-1.5 font-mono text-[11px]">
+                    {logLines
+                      .filter((l) => l.kind === "bridge" || l.kind === "tool_call" || l.kind === "audit")
+                      .slice(-6)
+                      .reverse()
+                      .map((line, i) => (
+                        <li
+                          key={i}
+                          className={
+                            line.kind === "audit"
+                              ? "text-crimson-light/90 truncate pr-2"
+                              : line.kind === "bridge"
+                                ? "text-sage truncate pr-2"
+                                : "text-gold-light/90 truncate pr-2"
+                          }
+                          title={line.text}
+                        >
+                          <span className="text-sage-dim">[{line.kind}]</span> {line.text.slice(0, 40)}
+                          {line.text.length > 40 ? "…" : ""}
+                        </li>
+                      ))}
+                    {logLines.filter((l) => l.kind === "bridge" || l.kind === "tool_call" || l.kind === "audit").length === 0 && (
+                      <li className="text-sage-dim">None yet</li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
 
       </main>
